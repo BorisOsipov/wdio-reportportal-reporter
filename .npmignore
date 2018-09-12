@@ -15,3 +15,5 @@ coverage
 
 # node-waf configuration
 .lock-wscript
+
+testWip/
