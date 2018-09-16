@@ -1,6 +1,6 @@
 {
     "name": "wdio-reportportal-reporter",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "A WebdriverIO plugin. Report results to Report Portal.",
     "main": "build/reporter.js",
     "scripts": {
@@ -33,9 +33,9 @@
     "author": "Boris Osipov <osipov.boris@gmail.com>",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/borisosipov/wdio-reportportal-reporter./issues"
+        "url": "https://github.com/borisosipov/wdio-reportportal-reporter/issues"
     },
-    "homepage": "https://github.com/borisosipov/wdio-reportportal-reporter.#readme",
+    "homepage": "https://github.com/borisosipov/wdio-reportportal-reporter#readme",
     "dependencies": {
         "reportportal-client": "^5.1.0",
         "babel-runtime": "^6.26.0"
@@ -61,7 +61,7 @@
         "npm-run-all": "~4.1.0",
         "rimraf": "^2.6.2",
         "server-destroy": "^1.0.1",
-        "wdio-cucumber-framework": "^1.0.4",
+        "wdio-cucumber-framework": "^2.2.7",
         "wdio-phantomjs-service": "^0.2.2",
         "webdriverio": "^4.12.0"
     },
