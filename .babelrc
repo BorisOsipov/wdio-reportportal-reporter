@@ -12,6 +12,7 @@
   "plugins": [
     "transform-runtime",
     "add-module-exports",
-    "transform-function-bind"
+    "transform-function-bind",
+    ["transform-object-rest-spread", { "useBuiltIns": true }]
   ]
 }
