@@ -37,15 +37,15 @@
     },
     "homepage": "https://github.com/borisosipov/wdio-reportportal-reporter#readme",
     "dependencies": {
-        "reportportal-client": "^5.1.0",
-        "babel-runtime": "^6.26.0"
+        "babel-runtime": "^6.26.0",
+        "reportportal-client": "https://github.com/reportportal/client-javascript.git#b09e49b"
     },
     "devDependencies": {
         "babel-cli": "^6.26.0",
         "babel-eslint": "^8.2.2",
-        "babel-plugin-transform-object-rest-spread": "^6.26.0",
         "babel-plugin-add-module-exports": "~0.2.1",
         "babel-plugin-transform-function-bind": "^6.22.0",
+        "babel-plugin-transform-object-rest-spread": "^6.26.0",
         "babel-plugin-transform-runtime": "~6.23.0",
         "babel-preset-env": "^1.6.1",
         "babel-register": "^6.26.0",
