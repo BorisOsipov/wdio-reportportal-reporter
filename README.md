@@ -9,7 +9,7 @@ The easiest way is to keep `wdio-reportportal-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "wdio-reportportal-reporter": "~0.0.4"
+    "wdio-reportportal-reporter": "~0.0.6"
   }
 }
 ```
@@ -30,6 +30,7 @@ exports.config = {
         endpoint: 'https://reportportal-url/api/v1',
         launch: 'launch_name',
         project: 'project_name',
+        mode: 'DEFAULT'
       }
     },
   // ...
