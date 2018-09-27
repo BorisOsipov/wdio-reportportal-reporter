@@ -47,7 +47,7 @@ exports.config = {
 
 Api methods can be accessed using:
 ```js
-const reporter = require('wdio-allure-reporter')
+const reporter = require('wdio-reportportal-reporter')
 ```
 ### Methods description
 * `sendLog(level, message) ` – send log to current suite\test item.
