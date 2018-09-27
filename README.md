@@ -34,7 +34,7 @@ exports.config = {
           mode: 'DEFAULT'
         },
         enableSeleniumCommandReporting: false,
-        enableScreenshotsReporting: true,
+        enableScreenshotsReporting: false,
         seleniumCommandsLogLevel: 'debug',
         screenshotsLogLevel: 'info',
       }
