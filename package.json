@@ -28,7 +28,8 @@
         "webdriverio",
         "wdio",
         "wdio-plugin",
-        "wdio-reporter"
+        "wdio-reporter",
+        "reportportal"
     ],
     "author": "Boris Osipov <osipov.boris@gmail.com>",
     "license": "MIT",
@@ -38,6 +39,7 @@
     "homepage": "https://github.com/borisosipov/wdio-reportportal-reporter#readme",
     "dependencies": {
         "babel-runtime": "^6.26.0",
+        "json-stringify-safe": "~5.0.1",
         "reportportal-client": "https://github.com/reportportal/client-javascript.git#b09e49b"
     },
     "devDependencies": {
@@ -62,6 +64,7 @@
         "rimraf": "^2.6.2",
         "server-destroy": "^1.0.1",
         "wdio-cucumber-framework": "^2.2.7",
+        "wdio-mocha-framework": "^0.6.3",
         "wdio-phantomjs-service": "^0.2.2",
         "webdriverio": "^4.12.0"
     },
