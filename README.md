@@ -37,6 +37,7 @@ exports.config = {
         enableScreenshotsReporting: false,
         seleniumCommandsLogLevel: 'debug',
         screenshotsLogLevel: 'info',
+        enableRetriesWorkaround: false,
       }
     },
   // ...
