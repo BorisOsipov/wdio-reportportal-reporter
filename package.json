@@ -9,7 +9,7 @@
         "compile": "babel lib/ -d build/",
         "eslint": "eslint ./lib",
         "test": "run-s eslint test:unit",
-        "test:unit": "mocha",
+        "test:unit": "mocha"
     },
     "repository": {
         "type": "git",
