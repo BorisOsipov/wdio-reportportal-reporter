@@ -23,7 +23,7 @@ const config = {
   // services: ['phantomjs'],
   reporters: [reporter],
   // framework: 'mocha',
-  host: 'wdio1.westeurope.cloudapp.azure.com',
+  host: '127.0.0.1',
   reporterOptions: {
     reportportal: conf,
   },
