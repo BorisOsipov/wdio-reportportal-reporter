@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { runCucumber } from '../helper';
 
 describe('Cucumber test cases', () => {
