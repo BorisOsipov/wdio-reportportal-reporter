@@ -1,0 +1,13 @@
+{
+  "extends": [
+    "tslint:recommended"
+  ],
+  "jsRules": {},
+  "rules": {
+    "max-line-length": false,
+    "max-classes-per-file": false,
+    "no-var-requires": false,
+    "no-empty": false
+  },
+  "rulesDirectory": []
+}

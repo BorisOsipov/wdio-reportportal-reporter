@@ -35,7 +35,7 @@ const config = {
   framework: 'cucumber',
   cucumberOpts: {
     timeout: 20000,
-    require: ['test/fixtures/features/steps/passing-steps.js', 'test/fixtures/features/steps/hooks.js'],
+    require: ['tests/fixtures/features/steps/passing-steps.js', 'tests/fixtures/features/steps/hooks.js'],
     compiler: [
       'js:babel-register',
     ],

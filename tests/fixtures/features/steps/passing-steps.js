@@ -1,6 +1,5 @@
-/* eslint-disable no-unused-vars,import/no-extraneous-dependencies */
-const { expect } = require('chai');
 const { Given, Then, When } = require('cucumber');
+const { expect } = require('chai');
 
 Given('I visit {string}', (url) => {
 

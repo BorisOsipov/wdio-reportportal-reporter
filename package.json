@@ -1,68 +1,74 @@
 {
-    "name": "wdio-reportportal-reporter",
-    "version": "0.0.13",
-    "description": "A WebdriverIO plugin. Report results to Report Portal.",
-    "main": "build/reporter.js",
-    "scripts": {
-        "build": "run-s clean compile",
-        "clean": "rimraf ./build ./coverage",
-        "compile": "babel lib/ -d build/",
-        "eslint": "eslint ./lib",
-        "test": "run-s eslint test:unit",
-        "test:unit": "mocha"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/borisosipov/wdio-reportportal-reporter.git"
-    },
-    "directories": {
-        "lib": "./lib"
-    },
-    "keywords": [
-        "reporter",
-        "webdriverio",
-        "wdio",
-        "wdio-plugin",
-        "wdio-reporter",
-        "reportportal"
+  "name": "wdio-reportportal-reporter",
+  "version": "0.0.13",
+  "description": "A WebdriverIO plugin. Report results to Report Portal.",
+  "main": "build/reporter.js",
+  "scripts": {
+    "build": "run-s clean compile",
+    "clean": "rimraf ./build ./coverage",
+    "compile": "node ./node_modules/typescript/lib/tsc.js",
+    "lint": "tslint -c tslint.json 'lib/**/*.{ts,tsx}'",
+    "test": "run-s lint test:unit",
+    "test:integration": "mocha",
+    "test:unit": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/borisosipov/wdio-reportportal-reporter.git"
+  },
+  "directories": {
+    "lib": "./lib"
+  },
+  "keywords": [
+    "reporter",
+    "webdriverio",
+    "wdio",
+    "wdio-plugin",
+    "wdio-reporter",
+    "reportportal"
+  ],
+  "author": "Boris Osipov <osipov.boris@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/borisosipov/wdio-reportportal-reporter/issues"
+  },
+  "homepage": "https://github.com/borisosipov/wdio-reportportal-reporter#readme",
+  "dependencies": {
+    "json-stringify-safe": "~5.0.1",
+    "reportportal-client": "https://github.com/reportportal/client-javascript.git#b09e49b"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.3.3",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.4",
+    "@types/chai": "4.1.4",
+    "@types/cucumber": "^4.0.4",
+    "@types/mocha": "5.2.5",
+    "@types/webdriverio": "^4.10.4",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "npm-run-all": "~4.1.0",
+    "rimraf": "^2.6.2",
+    "wdio-cucumber-framework": "^2.2.7",
+    "wdio-mocha-framework": "^0.6.3",
+    "webdriverio": "^4.12.0",
+    "ts-node": "7.0.1",
+    "tslint": "^5.11.0",
+    "typescript": "2.9.2"
+  },
+  "contributors": [
+    "Boris Osipov <osipov.boris@gmail.com>"
+  ],
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx"
     ],
-    "author": "Boris Osipov <osipov.boris@gmail.com>",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/borisosipov/wdio-reportportal-reporter/issues"
+    "transform": {
+      "\\.(ts|tsx)$": "ts-jest"
     },
-    "homepage": "https://github.com/borisosipov/wdio-reportportal-reporter#readme",
-    "dependencies": {
-        "babel-runtime": "^6.26.0",
-        "json-stringify-safe": "~5.0.1",
-        "reportportal-client": "https://github.com/reportportal/client-javascript.git#b09e49b"
-    },
-    "devDependencies": {
-        "babel-cli": "^6.26.0",
-        "babel-eslint": "^8.2.2",
-        "babel-plugin-add-module-exports": "~0.2.1",
-        "babel-plugin-transform-function-bind": "^6.22.0",
-        "babel-plugin-transform-object-rest-spread": "^6.26.0",
-        "babel-plugin-transform-runtime": "~6.23.0",
-        "babel-preset-env": "^1.6.1",
-        "babel-register": "^6.26.0",
-        "chai": "^4.1.2",
-        "eslint": "^4.19.0",
-        "eslint-config-airbnb-base": "^12.1.0",
-        "eslint-plugin-import": "^2.9.0",
-        "eslint-plugin-mocha": "^5.0.0",
-        "eslint-plugin-node": "^5.2.1",
-        "mocha": "^5.2.0",
-        "node-static": "^0.7.10",
-        "npm-run-all": "~4.1.0",
-        "rimraf": "^2.6.2",
-        "server-destroy": "^1.0.1",
-        "wdio-cucumber-framework": "^2.2.7",
-        "wdio-mocha-framework": "^0.6.3",
-        "wdio-phantomjs-service": "^0.2.2",
-        "webdriverio": "^4.12.0"
-    },
-    "contributors": [
-        "Boris Osipov <osipov.boris@gmail.com>"
-    ]
+    "testRegex": "/__tests__/.*\\.spec.(ts)$"
+  }
 }

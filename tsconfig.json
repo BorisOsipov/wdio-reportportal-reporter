@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2015",
+    "outDir": "./build",
+    "inlineSourceMap": true,
+    "inlineSources": false,
+    "noImplicitReturns": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true
+  },
+  "include": ["lib/"],
+  "exclude": [
+    "node_modules/"
+  ]
+}
