@@ -159,6 +159,10 @@ class ReportPortalReporter extends EventEmitter {
 
   public testFinished(test, status, issue?) {
     const parent = this.getParent(test.cid);
+    if (parent && parent.type !== TYPE.STEP) {
+      return;
+    }
+
     const finishTestObj = new TestEndObj(status, issue);
     if (status === STATUS.FAILED) {
       let message = `Message: ${test.err.message}\n`;
