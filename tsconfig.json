@@ -3,14 +3,14 @@
     "module": "commonjs",
     "target": "es2015",
     "outDir": "./build",
-    "inlineSourceMap": true,
+    "inlineSourceMap": false,
     "inlineSources": false,
     "noImplicitReturns": true,
     "noImplicitAny": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "declaration": true
   },
   "include": ["lib/"],
   "exclude": [
-    "node_modules/"
-  ]
+    "node_modules/", "lib/__tests__/"]
 }

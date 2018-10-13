@@ -2,7 +2,7 @@ import { EventEmitter } from "events";
 import * as ReportPortalClient from "reportportal-client";
 import {EVENTS, LEVEL, STATUS, TYPE} from "./constants";
 import ReporterOptions from "./ReporterOptions";
-import { isEmpty, limit, Logger, promiseErrorHandler, sendToReporter } from "./utils";
+import { isEmpty, limit, Logger, parseTags, promiseErrorHandler, sendToReporter } from "./utils";
 
 class ReportPortalReporter extends EventEmitter {
   public static reporterName = "reportportal";
@@ -15,12 +15,12 @@ class ReportPortalReporter extends EventEmitter {
     sendToReporter(EVENTS.RP_FILE, { level, name, content, type });
   }
 
-  public static sendLogToLastFailedTest(test, level, message) {
-    sendToReporter(EVENTS.RP_FAILED_LOG, { test, level, message });
+  public static sendLogToTest(test, level, message) {
+    sendToReporter(EVENTS.RP_TEST_LOG, { test, level, message });
   }
 
-  public static sendFileToLastFailedTest(test, level, name, content, type = "image/png") {
-    sendToReporter(EVENTS.RP_FAILED_FILE, { test, level, name, content, type });
+  public static sendFileToTest(test, level, name, content, type = "image/png") {
+    sendToReporter(EVENTS.RP_TEST_FILE, { test, level, name, content, type });
   }
   public parents = {};
   public logger: Logger;
@@ -56,8 +56,8 @@ class ReportPortalReporter extends EventEmitter {
     // Rp events
     this.on(EVENTS.RP_LOG, this.sendLog.bind(this));
     this.on(EVENTS.RP_FILE, this.sendFile.bind(this));
-    this.on(EVENTS.RP_FAILED_LOG, this.sendLogToLastFailedItem.bind(this));
-    this.on(EVENTS.RP_FAILED_FILE, this.sendFileToLastFailedItem.bind(this));
+    this.on(EVENTS.RP_TEST_LOG, this.sendLogToTest.bind(this));
+    this.on(EVENTS.RP_TEST_FILE, this.sendFileToTest.bind(this));
   }
 
   public getParent(cid: string) {
@@ -127,6 +127,13 @@ class ReportPortalReporter extends EventEmitter {
     if (browser) {
       const param = { key: "browser", value: browser };
       testStartObj.parameters = [param];
+    }
+
+    if (this.options.parseTagsFromTestTitle) {
+      const tags = parseTags(test.title);
+      if (tags.length > 0) {
+        testStartObj.tags = tags;
+      }
     }
 
     const { tempId, promise } = this.client.startTestItem(
@@ -252,12 +259,12 @@ class ReportPortalReporter extends EventEmitter {
     delete this.startedTests[runner.cid];
   }
 
-  public async sendLogToLastFailedItem({ cid, test, level, message }) {
+  public async sendLogToTest({ cid, test, level, message }) {
     const failedTest = this.startedTests[cid].find(({test: startedTest}) => {
       return startedTest.title === test.title;
     });
     if (!failedTest) {
-      this.logger.warn(`Can not send log to test ${test.uid}`);
+      this.logger.warn(`Can not send log to test ${test.title}`);
       return;
     }
     const rs = await failedTest.promise;
@@ -274,12 +281,12 @@ class ReportPortalReporter extends EventEmitter {
     promiseErrorHandler(promise);
   }
 
-  public async sendFileToLastFailedItem({ cid, test, level, name, content, type = "image/png" }) {
+  public async sendFileToTest({ cid, test, level, name, content, type = "image/png" }) {
     const failedTest = this.startedTests[cid].find(({test: startedTest}) => {
       return startedTest.title === test.title;
     });
     if (!failedTest) {
-      this.logger.warn(`Can not send file to test ${test.uid}`);
+      this.logger.warn(`Can not send file to test ${test.title}`);
       return;
     }
     const rs = await failedTest.promise;
@@ -298,6 +305,7 @@ class ReportPortalReporter extends EventEmitter {
   public sendLog({ cid, level, message }) {
     const parent = this.getParent(cid);
     if (!parent) {
+      this.logger.warn(`Can not send log to test. There is no running tests`);
       return;
     }
     const { promise } = this.client.sendLog(parent.id, {
@@ -310,6 +318,7 @@ class ReportPortalReporter extends EventEmitter {
   public sendFile({ cid, level, name, content, type = "image/png" }) {
     const parent = this.getParent(cid);
     if (!parent) {
+      this.logger.warn(`Can not send file to test. There is no running tests`);
       return;
     }
 
@@ -341,6 +350,7 @@ class SuiteStartObj {
 class TestStartObj {
   public name = "";
   public parameters?: any[];
+  public tags?: any[];
   private readonly type = TYPE.STEP;
 
   constructor(name: string) {

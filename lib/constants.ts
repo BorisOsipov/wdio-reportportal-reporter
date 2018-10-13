@@ -1,8 +1,8 @@
 export enum EVENTS {
-  RP_LOG = "rp=log",
-  RP_FILE = "rp=file",
-  RP_FAILED_LOG = "rp=failedLog",
-  RP_FAILED_FILE = "rp=failedFile",
+  RP_LOG = "rp:log",
+  RP_FILE = "rp:file",
+  RP_TEST_LOG = "rp:failedLog",
+  RP_TEST_FILE = "rp:failedFile",
 }
 
 export enum STATUS {

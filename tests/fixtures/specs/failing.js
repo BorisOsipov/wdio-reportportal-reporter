@@ -1,16 +1,19 @@
-const { expect } = require('chai');
+const { assert } = require('chai');
 
-describe('A failing Suite', () => {
-  beforeEach(async () => {
-    await browser.url('https://github.com/');
+describe('test footer', function () {
+  this.retries(2);
+
+  beforeEach(() => {
+    browser.url('https://ya.ru/');
+  }, 2);
+
+  it('Verify footer is displayed @ta-g @tag tag3 @Footer', function () {
+    assert.isTrue(false, 'test 1 failed')
   });
 
-  [31, 32, 33, 34, 35, 36, 37, 38, 39, 40].forEach((el) => {
-    it(`with failing test${el}`, async function () {
-      this.retries(2);
-      await browser.url('https://github.com/');
-      await browser.getTitle();
-      expect(true).to.be.equal(false);
-    });
-  });
+  it('Verify footer is displayed @ta-g @Smoke @Footer', function () {
+    browser.url('some url');
+    assert.isTrue(false, 'test 2 failed')
+  })
+
 });

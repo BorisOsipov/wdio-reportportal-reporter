@@ -5,6 +5,7 @@ const ARRLENGTH = 10;
 const STRINGLIMIT = 1000;
 const STRINGTRUNCATE = 200;
 const notBase64 = /[^A-Z0-9+/=]/i;
+const TAGS_PATTERN = /\B@[a-z0-9_-]+/gi;
 
 export class Logger {
   private debug = false;
@@ -105,6 +106,8 @@ export const limit = (val: any) => {
     }
   }
 };
+
+export const parseTags = (text: string): string[] => text.match(TAGS_PATTERN) || [];
 
 export const sendToReporter = (event: any, msg = {}) => {
   process.send({ event, ...msg });
