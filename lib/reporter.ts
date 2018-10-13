@@ -257,7 +257,7 @@ class ReportPortalReporter extends EventEmitter {
       return startedTest.title === test.title;
     });
     if (!failedTest) {
-      this.logger.warn(`Can not send file to test ${test.uid}`);
+      this.logger.warn(`Can not send log to test ${test.uid}`);
       return;
     }
     const rs = await failedTest.promise;
