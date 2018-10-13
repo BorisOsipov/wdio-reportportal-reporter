@@ -15,17 +15,16 @@ class ReportPortalReporter extends EventEmitter {
     sendToReporter(EVENTS.RP_FILE, { level, name, content, type });
   }
 
-  public static sendLogToLastFailedTest(level, message) {
-    sendToReporter(EVENTS.RP_FAILED_LOG, { level, message });
+  public static sendLogToLastFailedTest(test, level, message) {
+    sendToReporter(EVENTS.RP_FAILED_LOG, { test, level, message });
   }
 
-  public static sendFileToLastFailedTest(level, name, content, type = "image/png") {
-    sendToReporter(EVENTS.RP_FAILED_FILE, { level, name, content, type });
+  public static sendFileToLastFailedTest(test, level, name, content, type = "image/png") {
+    sendToReporter(EVENTS.RP_FAILED_FILE, { test, level, name, content, type });
   }
-  public parents: object;
+  public parents = {};
   public logger: Logger;
-  public testStartRequestsPromises: object;
-  public lastFailedTestRequestPromises: object;
+  public startedTests = {};
   public tempLaunchId: string;
   public config: object;
   public options: ReporterOptions;
@@ -36,10 +35,7 @@ class ReportPortalReporter extends EventEmitter {
   constructor(baseReporter: any, config: any, options: ReporterOptions) {
     super();
     this.baseReporter = baseReporter;
-    this.parents = {};
     this.logger = new Logger(options.debug);
-    this.testStartRequestsPromises = {};
-    this.lastFailedTestRequestPromises = {};
     this.config = config;
     this.options = Object.assign(new ReporterOptions(), options);
 
@@ -52,16 +48,16 @@ class ReportPortalReporter extends EventEmitter {
     this.on("test:pending", this.testPending.bind(this));
 
     this.on("start", this.start.bind(this));
+    this.on("end", this.end.bind(this));
     this.on("runner:command", this.runnerCommand.bind(this));
     this.on("runner:result", this.runnerResult.bind(this));
+    this.on("runner:end", this.runnerEnd.bind(this));
 
     // Rp events
     this.on(EVENTS.RP_LOG, this.sendLog.bind(this));
     this.on(EVENTS.RP_FILE, this.sendFile.bind(this));
     this.on(EVENTS.RP_FAILED_LOG, this.sendLogToLastFailedItem.bind(this));
     this.on(EVENTS.RP_FAILED_FILE, this.sendFileToLastFailedItem.bind(this));
-
-    this.on("end", this.end.bind(this));
   }
 
   public getParent(cid: string) {
@@ -105,6 +101,9 @@ class ReportPortalReporter extends EventEmitter {
     );
     promiseErrorHandler(promise);
     this.addParent(suite.cid, { type: TYPE.SUITE, id: tempId, promise });
+    if (!this.startedTests[suite.cid]) {
+      this.startedTests[suite.cid] = [];
+    }
   }
 
   public suiteEnd(suite) {
@@ -119,7 +118,7 @@ class ReportPortalReporter extends EventEmitter {
       return;
     }
     const parent = this.getParent(test.cid);
-    if (parent.type === TYPE.TEST && this.options.enableRetriesWorkaround) {
+    if (parent.type === TYPE.STEP && this.options.enableRetriesWorkaround) {
       return;
     }
     const testStartObj = new TestStartObj(test.title);
@@ -137,8 +136,9 @@ class ReportPortalReporter extends EventEmitter {
     );
     promiseErrorHandler(promise);
 
-    this.testStartRequestsPromises[test.cid] = promise;
-    this.addParent(test.cid, { type: TYPE.TEST, id: tempId, promise });
+    this.addParent(test.cid, { type: TYPE.STEP, id: tempId, promise });
+    this.startedTests[test.cid].push({test, promise});
+    return promise;
   }
 
   public testPass(test) {
@@ -177,12 +177,7 @@ class ReportPortalReporter extends EventEmitter {
     const { promise } = this.client.finishTestItem(parent.id, finishTestObj);
     promiseErrorHandler(promise);
 
-    if (status === STATUS.FAILED) {
-      this.lastFailedTestRequestPromises[test.cid] = this.testStartRequestsPromises[test.cid];
-    }
-
     this.clearParent(test.cid);
-    delete this.testStartRequestsPromises[test.cid];
   }
 
   public runnerCommand(command) {
@@ -253,12 +248,19 @@ class ReportPortalReporter extends EventEmitter {
     }
   }
 
-  public async sendLogToLastFailedItem({ cid, level, message }) {
-    if (!(await this.waitForFailedTest(cid, 2000, 10))) {
-      this.logger.warn("Attempt to send file to failed item fails. There is no failed test yet.");
+  public runnerEnd(runner) {
+    delete this.startedTests[runner.cid];
+  }
+
+  public async sendLogToLastFailedItem({ cid, test, level, message }) {
+    const failedTest = this.startedTests[cid].find(({test: startedTest}) => {
+      return startedTest.title === test.title;
+    });
+    if (!failedTest) {
+      this.logger.warn(`Can not send file to test ${test.uid}`);
       return;
     }
-    const rs = await this.lastFailedTestRequestPromises[cid];
+    const rs = await failedTest.promise;
 
     const saveLogRQ = {
       item_id: rs.id,
@@ -272,12 +274,16 @@ class ReportPortalReporter extends EventEmitter {
     promiseErrorHandler(promise);
   }
 
-  public async sendFileToLastFailedItem({ cid, level, name, content, type = "image/png" }) {
-    if (!(await this.waitForFailedTest(cid, 2000, 10))) {
-      this.logger.warn("Attempt to send log to failed item fails. There is no failed test yet.");
+  public async sendFileToLastFailedItem({ cid, test, level, name, content, type = "image/png" }) {
+    const failedTest = this.startedTests[cid].find(({test: startedTest}) => {
+      return startedTest.title === test.title;
+    });
+    if (!failedTest) {
+      this.logger.warn(`Can not send file to test ${test.uid}`);
       return;
     }
-    const rs = await this.lastFailedTestRequestPromises[cid];
+    const rs = await failedTest.promise;
+
     const saveLogRQ = {
       item_id: rs.id,
       level,
@@ -318,18 +324,6 @@ class ReportPortalReporter extends EventEmitter {
 
     this.parents[cid] = [];
     return this.parents[cid];
-  }
-
-  public async waitForFailedTest(cid, time, count = 10) {
-    const interval = time / count;
-    while (count > 0) {
-      if (this.lastFailedTestRequestPromises[cid]) {
-        return true;
-      }
-      await new Promise((resolve) => setTimeout(resolve, interval));
-      count -= 1;
-    }
-    return false;
   }
 }
 
