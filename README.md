@@ -1,6 +1,8 @@
 WDIO Report Portal Reporter
 ====================
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/BorisOsipov/wdio-reportportal-reporter.svg)](https://greenkeeper.io/)
+
 > A WebdriverIO reporter plugin to report results to Report Portal(http://reportportal.io/).
 
 
