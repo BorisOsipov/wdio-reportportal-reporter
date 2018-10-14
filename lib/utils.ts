@@ -1,43 +1,47 @@
-/* eslint-disable no-console,no-param-reassign,class-methods-use-this */
-const stringify = require('json-stringify-safe');
+const stringify = require("json-stringify-safe");
 
 const OBJLENGTH = 10;
 const ARRLENGTH = 10;
 const STRINGLIMIT = 1000;
 const STRINGTRUNCATE = 200;
 const notBase64 = /[^A-Z0-9+/=]/i;
+const TAGS_PATTERN = /\B@[a-z0-9_-]+/gi;
 
-class Logger {
+export class Logger {
+  private debug = false;
   constructor(debug = false) {
     this.debug = debug;
   }
 
-  info(msg) {
+  public info(msg: string) {
+    // tslint:disable-next-line
     console.log(msg);
   }
 
-  error(msg) {
+  public error(msg: string) {
+    // tslint:disable-next-line
     console.error(msg);
   }
 
-  warn(msg) {
+  public warn(msg: string) {
     if (this.debug) {
+      // tslint:disable-next-line
       console.warn(msg);
     }
   }
 }
 
 const logger = new Logger();
-const promiseErrorHandler = (promise) => {
+export const promiseErrorHandler = (promise: Promise<any>) => {
   promise.catch((err) => {
     logger.error(err);
   });
 };
 
-const isEmpty = object => !object || Object.keys(object).length === 0;
+export const isEmpty = (object: object) => !object || Object.keys(object).length === 0;
 
-const isBase64 = (str) => {
-  if (typeof str !== 'string') {
+const isBase64 = (str: string) => {
+  if (typeof str !== "string") {
     return false;
   }
 
@@ -46,10 +50,10 @@ const isBase64 = (str) => {
     return false;
   }
 
-  const firstPaddingChar = str.indexOf('=');
+  const firstPaddingChar = str.indexOf("=");
   return firstPaddingChar === -1 ||
     firstPaddingChar === len - 1 ||
-    (firstPaddingChar === len - 2 && str[len - 1] === '=');
+    (firstPaddingChar === len - 2 && str[len - 1] === "=");
 };
 
 /**
@@ -57,13 +61,13 @@ const isBase64 = (str) => {
  * @param  {Any} val Any variable
  * @return {Any} Limited var of same type
  */
-const limit = (val) => {
-  if (!val) return val;
+export const limit = (val: any) => {
+  if (!val) { return val; }
   // Ensure we're working with a copy
   let value = JSON.parse(stringify(val));
 
   switch (Object.prototype.toString.call(value)) {
-    case '[object String]':
+    case "[object String]":
       if (value.length > 100 && isBase64(value)) {
         return `[base64] ${value.length} bytes`;
       }
@@ -73,7 +77,7 @@ const limit = (val) => {
       }
 
       return value;
-    case '[object Array]': {
+    case "[object Array]": {
       const { length } = value;
       if (length > ARRLENGTH) {
         value = value.slice(0, ARRLENGTH);
@@ -81,7 +85,7 @@ const limit = (val) => {
       }
       return value.map(limit);
     }
-    case '[object Object]': {
+    case "[object Object]": {
       const keys = Object.keys(value);
       const removed = [];
       for (let i = 0, l = keys.length; i < l; i += 1) {
@@ -103,10 +107,8 @@ const limit = (val) => {
   }
 };
 
-const sendToReporter = (event, msg = {}) => {
-  process.send({ event, ...msg });
-};
+export const parseTags = (text: string): string[] => text.match(TAGS_PATTERN) || [];
 
-module.exports = {
-  promiseErrorHandler, Logger, isEmpty, limit, sendToReporter,
+export const sendToReporter = (event: any, msg = {}) => {
+  process.send({ event, ...msg });
 };

@@ -1,9 +1,6 @@
 const { expect } = require('chai');
 
 describe('A passing Suite', () => {
-  beforeEach(async () => {
-    await browser.url('https://github.com/');
-  });
 
   it('should have the right title - the fancy generator way', async () => {
     await browser.url('https://github.com/');

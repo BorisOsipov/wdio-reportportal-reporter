@@ -14,6 +14,7 @@ const conf = {
   enableScreenshotsReporting: false,
   screenshotsLogLevel: 'info',
   enableRetriesWorkaround: true,
+  parseTagsFromTestTitle: false,
 };
 
 const config = {
@@ -35,15 +36,18 @@ const config = {
   framework: 'cucumber',
   cucumberOpts: {
     timeout: 20000,
-    require: ['test/fixtures/features/steps/passing-steps.js', 'test/fixtures/features/steps/hooks.js'],
+    require: ['tests/fixtures/features/steps/passing-steps.js', 'tests/fixtures/features/steps/hooks.js'],
     compiler: [
       'js:babel-register',
     ],
   },
-  afterTest: async function afterTest(test) {
+  afterTest: async function (test) {
+    //logging Pass or Fail for test
+    (test.passed) ? reporter.sendLogToTest(test, 'debug', `******* TEST '${test.title}' PASSED ******* `)
+      : reporter.sendLogToTest(test, 'debug', `******* TEST '${test.title}' FAILED ******* `);
     if (test.passed === false) {
       const screenshot = await browser.saveScreenshot();
-      reporter.sendFileToLastFailedTest('error', 'errorscreen.png', screenshot, 'image/png', test);
+      reporter.sendFileToTest(test, 'info', 'failed.png', screenshot);
     }
   },
 
@@ -53,4 +57,7 @@ const config = {
 
 };
 
-module.exports = { config, getConfig: () => config };
+module.exports = {
+  config,
+  getConfig: () => config
+};

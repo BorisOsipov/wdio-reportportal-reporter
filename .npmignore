@@ -2,6 +2,7 @@
 logs
 *.log
 *.png
+*.lock
 
 # Runtime data
 pids
@@ -17,5 +18,10 @@ coverage
 # node-waf configuration
 .lock-wscript
 
-test/
+build/__tests__/
 .idea/
+tsconfig.json
+tslint.json
+.travis.yml
+.gitignore
+.editorconfig
