@@ -362,9 +362,11 @@ class TestEndObj {
   public status: STATUS;
   public issue?: Issue;
   public description?: string;
-  constructor(status: STATUS, issue = new Issue("NOT_ISSUE")) {
+  constructor(status: STATUS, issue: Issue) {
     this.status = status;
-    this.issue = issue;
+    if (issue) {
+      this.issue = issue;
+    }
   }
 }
 
