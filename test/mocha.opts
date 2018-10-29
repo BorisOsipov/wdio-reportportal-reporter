@@ -1,4 +1,4 @@
 --timeout 66000
 --ui bdd
 --require ts-node/register
-test/integration/specs/*.ts
+test/*.js

@@ -9,15 +9,15 @@ function run(specs, wdioConfigPath) {
 }
 
 export const runMocha = (specs, wdioConfigPath?) => {
-  const features = specs.map((spec) => `./tests/fixtures/specs/${spec}.js`);
-  const path = wdioConfigPath || "./tests/fixtures/wdio.conf/wdio.conf.mocha.js";
+  const features = specs.map((spec) => `./test/fixtures/specs/${spec}.js`);
+  const path = wdioConfigPath || "./test/fixtures/wdio.conf/wdio.conf.mocha.js";
 
   return run(features, path);
 };
 
 export const runCucumber = (specs, wdioConfigPath?) => {
-  const features = specs.map((feature) => `./tests/fixtures/features/${feature}.feature`);
-  const configPath = wdioConfigPath || "./tests/fixtures/wdio.conf/wdio.conf.js";
+  const features = specs.map((feature) => `./test/fixtures/features/${feature}.feature`);
+  const configPath = wdioConfigPath || "./test/fixtures/wdio.conf/wdio.conf.js";
 
   return run(features, configPath);
 };
