@@ -108,7 +108,11 @@ class ReportPortalReporter extends EventEmitter {
 
   public suiteEnd(suite) {
     const parent = this.getParent(suite.cid);
-    const { promise } = this.client.finishTestItem(parent.id, {});
+    const finishSuiteObj = {status: STATUS.PASSED};
+    if (this.startedTests[suite.cid].length === 0) {
+      finishSuiteObj.status = STATUS.FAILED;
+    }
+    const { promise } = this.client.finishTestItem(parent.id, finishSuiteObj);
     promiseErrorHandler(promise);
     this.clearParent(suite.cid);
   }
@@ -256,7 +260,10 @@ class ReportPortalReporter extends EventEmitter {
   }
 
   public runnerEnd(runner) {
-    delete this.startedTests[runner.cid];
+    const clear = (cid) => {
+      delete this.startedTests[cid];
+    };
+    setTimeout(clear.bind(this), 5000, runner.cid);
   }
 
   public async sendLogToTest({ cid, test, level, message }) {
