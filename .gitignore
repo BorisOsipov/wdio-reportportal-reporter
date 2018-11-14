@@ -29,5 +29,4 @@ node_modules
 
 # JetBrains IDE
 .idea
-testWip/
 package-lock.json
