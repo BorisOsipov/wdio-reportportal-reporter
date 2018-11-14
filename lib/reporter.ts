@@ -267,7 +267,7 @@ class ReportPortalReporter extends EventEmitter {
   }
 
   public async sendLogToTest({ cid, test, level, message }) {
-    const failedTest = this.startedTests[cid].find(({test: startedTest}) => {
+    const failedTest = this.startedTests[cid].slice().reverse().find(({test: startedTest}) => {
       return startedTest.title === test.title;
     });
     if (!failedTest) {
@@ -289,7 +289,7 @@ class ReportPortalReporter extends EventEmitter {
   }
 
   public async sendFileToTest({ cid, test, level, name, content, type = "image/png" }) {
-    const failedTest = this.startedTests[cid].find(({test: startedTest}) => {
+    const failedTest = this.startedTests[cid].slice().reverse().find(({test: startedTest}) => {
       return startedTest.title === test.title;
     });
     if (!failedTest) {
