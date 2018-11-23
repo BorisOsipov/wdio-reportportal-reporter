@@ -130,15 +130,6 @@ export const addDescription = (description, suiteStartObj) => {
   }
 };
 
-export const addTagsToTest = (parseTagsFromTestTitle, test, testStartObj) => {
-  if (parseTagsFromTestTitle) {
-    const tags = parseTags(test.title);
-    if (tags.length > 0) {
-      testStartObj.tags = tags;
-    }
-  }
-};
-
 export const parseTags = (text: string): string[] => ("" + text).match(TAGS_PATTERN) || [];
 
 export const sendToReporter = (event: any, msg = {}) => {

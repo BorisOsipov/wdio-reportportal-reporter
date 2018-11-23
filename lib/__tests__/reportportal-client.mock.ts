@@ -7,27 +7,27 @@ export class RPClient {
   public baseURL: string;
 
   public startLaunch = jest.fn().mockReturnValue({
-       promise: new Promise((resolve) => resolve("ok")),
+       promise: Promise.resolve("ok"),
        tempId: "startLaunch",
       });
 
   public finishLaunch = jest.fn().mockReturnValue( {
-     promise: new Promise((resolve) => resolve("ok")),
+     promise: Promise.resolve("ok"),
      tempId: "finishLaunch",
   });
 
   public startTestItem = jest.fn().mockReturnValue({
-      promise: new Promise((resolve) => resolve("ok")),
+      promise: Promise.resolve("ok"),
       tempId: "startTestItem",
   });
 
   public finishTestItem = jest.fn().mockReturnValue({
-      promise: new Promise((resolve) => resolve("ok")),
+      promise: Promise.resolve("ok"),
       tempId: "finishTestItem",
   });
 
   public sendLog = jest.fn().mockReturnValue({
-      promise: new Promise((resolve) => resolve("ok")),
+      promise: Promise.resolve("ok"),
       tempId: "sendLog",
   });
 

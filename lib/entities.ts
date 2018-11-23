@@ -1,4 +1,5 @@
 import {STATUS, TYPE} from "./constants";
+import {parseTags} from "./utils";
 
 export class SuiteStartObj {
   public name = "";
@@ -19,6 +20,15 @@ export class TestStartObj {
 
   constructor(name: string) {
     this.name = name;
+  }
+
+  public addTagsToTest(parseTagsFromTestTitle) {
+    if (parseTagsFromTestTitle) {
+      const tags = parseTags(this.name);
+      if (tags.length > 0) {
+        this.tags = tags;
+      }
+    }
   }
 }
 

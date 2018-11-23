@@ -20,18 +20,7 @@ describe("startSuite", () => {
     expect(reporter.client.startTestItem).toBeCalledWith(
       {description: "baz", name: "foo", type: TYPE.SUITE},
       reporter.tempLaunchId,
-      undefined,
-    );
-  });
-
-  test("should not tags startSuite", () => {
-    reporter.suiteStart(Object.assign(suiteStartEvent(), {tags: []}));
-
-    expect(reporter.client.startTestItem).toBeCalledTimes(1);
-    expect(reporter.client.startTestItem).toBeCalledWith(
-      {description: "baz", name: "foo", type: TYPE.SUITE},
-      reporter.tempLaunchId,
-      undefined,
+      null,
     );
   });
 
@@ -42,18 +31,7 @@ describe("startSuite", () => {
     expect(reporter.client.startTestItem).toBeCalledWith(
       {description: "baz", name: "foo", type: TYPE.SUITE, tags: ["bar"]},
       reporter.tempLaunchId,
-      undefined,
-    );
-  });
-
-  test("should add tags startSuite", () => {
-    reporter.suiteStart(Object.assign(suiteStartEvent(), {tags: ["bar", "baz"]}));
-
-    expect(reporter.client.startTestItem).toBeCalledTimes(1);
-    expect(reporter.client.startTestItem).toBeCalledWith(
-      {description: "baz", name: "foo", type: TYPE.SUITE, tags: ["bar", "baz"]},
-      reporter.tempLaunchId,
-      undefined,
+      null,
     );
   });
 
@@ -64,7 +42,7 @@ describe("startSuite", () => {
     expect(reporter.client.startTestItem).toBeCalledWith(
       {name: "foo", type: TYPE.SUITE},
       reporter.tempLaunchId,
-      undefined,
+      null,
     );
   });
 
@@ -77,10 +55,10 @@ describe("startSuite", () => {
       1,
       {description: "baz", name: "foo", type: TYPE.SUITE},
       reporter.tempLaunchId,
-      undefined,
+      null,
     );
 
-    const {id} = reporter.getParent(suiteStartEvent().cid);
+    const {id} = reporter.storage.get(suiteStartEvent().cid);
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       2,
       {description: "baz", name: "foo", type: TYPE.SUITE},
@@ -90,28 +68,3 @@ describe("startSuite", () => {
   });
 
 });
-
-// public suiteStart(suite) {
-//   const suiteStartObj = new SuiteStartObj(suite.title);
-//   if (suite.tags && suite.tags.length > 0) {
-//     // check is it at least cucumber v1
-//     if (suite.tags[0].name) {
-//       suiteStartObj.tags = suite.tags.map((tag) => tag.name);
-//     } else {
-//       suiteStartObj.tags = suite.tags;
-//     }
-//   }
-//
-//   if (suite.description) {
-//     suiteStartObj.description = suite.description;
-//   }
-//   const parent = this.getParent(suite.cid) || {};
-//
-//   const { tempId, promise } = this.client.startTestItem(
-//     suiteStartObj,
-//     this.tempLaunchId,
-//     parent.id,
-//   );
-//   promiseErrorHandler(promise);
-//   this.addParent(suite.cid, { type: TYPE.SUITE, id: tempId, promise });
-// }

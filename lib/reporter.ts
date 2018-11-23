@@ -8,7 +8,6 @@ import {
   addBrowserParam,
   addDescription,
   addTagsToSuite,
-  addTagsToTest,
   isEmpty,
   limit,
   Logger,
@@ -105,7 +104,7 @@ class ReportPortalReporter extends EventEmitter {
     }
     const testStartObj = new TestStartObj(test.title);
     addBrowserParam(test.runner[test.cid].browserName, testStartObj);
-    addTagsToTest(this.options.parseTagsFromTestTitle, test, testStartObj);
+    testStartObj.addTagsToTest(this.options.parseTagsFromTestTitle);
 
     const { tempId, promise } = this.client.startTestItem(
       testStartObj,

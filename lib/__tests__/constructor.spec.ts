@@ -10,7 +10,6 @@ describe("constructor", () => {
     const config = {foo: "bar"};
     const reporter = new Reporter(baseReporter, config, options);
     expect(reporter.baseReporter).toEqual(baseReporter);
-    expect(reporter.config).toEqual(config);
     expect(reporter.options).toEqual(options);
   });
 
