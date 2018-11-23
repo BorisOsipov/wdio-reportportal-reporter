@@ -16,12 +16,12 @@ export class TestStartObj {
   public name = "";
   public parameters?: any[];
   public tags?: any[];
-  private readonly type = TYPE.STEP;
+  public readonly type = TYPE.STEP;
 
   constructor(name: string) {
     this.name = name;
     if (this.name.length > 256) {
-      this.name = this.name.slice(0, 255);
+      this.name = this.name.slice(0, 256);
     }
   }
 
