@@ -1,32 +1,41 @@
-import { EventEmitter } from "events";
+import {EventEmitter} from "events";
 import * as ReportPortalClient from "reportportal-client";
 import {EVENTS, LEVEL, STATUS, TYPE} from "./constants";
+import {Issue, StorageEntity, SuiteStartObj, TestEndObj, TestStartObj} from "./entities";
 import ReporterOptions from "./ReporterOptions";
-import { isEmpty, limit, Logger, parseTags, promiseErrorHandler, sendToReporter } from "./utils";
+import {Storage} from "./storage";
+import {
+  addBrowserParam,
+  addDescription,
+  addTagsToSuite,
+  isEmpty,
+  limit,
+  Logger,
+  promiseErrorHandler,
+  sendToReporter,
+} from "./utils";
 
 class ReportPortalReporter extends EventEmitter {
   public static reporterName = "reportportal";
 
-  public static sendLog(level, message) {
+  public static sendLog(level: LEVEL, message: any) {
     sendToReporter(EVENTS.RP_LOG, { level, message });
   }
 
-  public static sendFile(level, name, content, type = "image/png") {
+  public static sendFile(level: LEVEL, name: string, content: any, type = "image/png") {
     sendToReporter(EVENTS.RP_FILE, { level, name, content, type });
   }
 
-  public static sendLogToTest(test, level, message) {
+  public static sendLogToTest(test: any, level: LEVEL, message: any) {
     sendToReporter(EVENTS.RP_TEST_LOG, { test, level, message });
   }
 
-  public static sendFileToTest(test, level, name, content, type = "image/png") {
+  public static sendFileToTest(test: any, level: LEVEL, name: string, content: any, type = "image/png") {
     sendToReporter(EVENTS.RP_TEST_FILE, { test, level, name, content, type });
   }
-  public parents = {};
+  public storage = new Storage();
   public logger: Logger;
-  public startedTests = {};
   public tempLaunchId: string;
-  public config: object;
   public options: ReporterOptions;
   public client: ReportPortalClient;
   public baseReporter: any;
@@ -36,7 +45,6 @@ class ReportPortalReporter extends EventEmitter {
     super();
     this.baseReporter = baseReporter;
     this.logger = new Logger(options.debug);
-    this.config = config;
     this.options = Object.assign(new ReporterOptions(), options);
 
     // Test framework events
@@ -60,85 +68,43 @@ class ReportPortalReporter extends EventEmitter {
     this.on(EVENTS.RP_TEST_FILE, this.sendFileToTest.bind(this));
   }
 
-  public getParent(cid: string) {
-    const parents = this.getParentIds(cid);
-    if (!parents.length) {
-      return null;
-    }
-    return parents[parents.length - 1];
-  }
-
-  public addParent(cid: string, parent) {
-    const parents = this.getParentIds(cid);
-    parents.push(parent);
-  }
-
-  public clearParent(cid: string) {
-    const parents = this.getParentIds(cid);
-    parents.pop();
-  }
-
-  public suiteStart(suite) {
+ public suiteStart(suite: any) {
     const suiteStartObj = new SuiteStartObj(suite.title);
-    if (suite.tags && suite.tags.length > 0) {
-      // check is it at least cucumber v1
-      if (suite.tags[0].name) {
-        suiteStartObj.tags = suite.tags.map((tag) => tag.name);
-      } else {
-        suiteStartObj.tags = suite.tags;
-      }
-    }
-
-    if (suite.description) {
-      suiteStartObj.description = suite.description;
-    }
-    const parent = this.getParent(suite.cid) || {};
-
+    addTagsToSuite(suite.tags, suiteStartObj);
+    addDescription(suite.description, suiteStartObj);
+    const parent = this.storage.get(suite.cid) || {id: null};
     const { tempId, promise } = this.client.startTestItem(
       suiteStartObj,
       this.tempLaunchId,
       parent.id,
     );
     promiseErrorHandler(promise);
-    this.addParent(suite.cid, { type: TYPE.SUITE, id: tempId, promise });
-    if (!this.startedTests[suite.cid]) {
-      this.startedTests[suite.cid] = [];
-    }
+
+    this.storage.add(suite.cid, new StorageEntity(TYPE.SUITE, tempId, promise, suite));
   }
 
-  public suiteEnd(suite) {
-    const parent = this.getParent(suite.cid);
+  public suiteEnd(suite: any) {
+    const parent = this.storage.get(suite.cid);
     const finishSuiteObj = {status: STATUS.PASSED};
-    if (this.startedTests[suite.cid].length === 0) {
+    if (this.storage.getStartedTests(suite.cid).length === 0) {
       finishSuiteObj.status = STATUS.FAILED;
     }
     const { promise } = this.client.finishTestItem(parent.id, finishSuiteObj);
     promiseErrorHandler(promise);
-    this.clearParent(suite.cid);
+    this.storage.clear(suite.cid);
   }
 
-  public testStart(test) {
+  public testStart(test: any) {
     if (!test.title) {
       return;
     }
-    const parent = this.getParent(test.cid);
+    const parent = this.storage.get(test.cid);
     if (parent.type === TYPE.STEP && this.options.enableRetriesWorkaround) {
       return;
     }
     const testStartObj = new TestStartObj(test.title);
-
-    const browser = test.runner[test.cid].browserName;
-    if (browser) {
-      const param = { key: "browser", value: browser };
-      testStartObj.parameters = [param];
-    }
-
-    if (this.options.parseTagsFromTestTitle) {
-      const tags = parseTags(test.title);
-      if (tags.length > 0) {
-        testStartObj.tags = tags;
-      }
-    }
+    addBrowserParam(test.runner[test.cid].browserName, testStartObj);
+    testStartObj.addTagsToTest(this.options.parseTagsFromTestTitle);
 
     const { tempId, promise } = this.client.startTestItem(
       testStartObj,
@@ -147,37 +113,35 @@ class ReportPortalReporter extends EventEmitter {
     );
     promiseErrorHandler(promise);
 
-    this.addParent(test.cid, { type: TYPE.STEP, id: tempId, promise });
-    this.startedTests[test.cid].push({test, promise});
+    this.storage.add(test.cid, new StorageEntity(TYPE.STEP, tempId, promise, test));
     return promise;
   }
 
-  public testPass(test) {
+  public testPass(test: any) {
     this.testFinished(test, STATUS.PASSED);
   }
 
-  public testFail(test) {
+  public testFail(test: any) {
     this.testFinished(test, STATUS.FAILED);
   }
 
-  public testPending(test) {
-    const parent = this.getParent(test.cid);
+  public testPending(test: any) {
+    const parent = this.storage.get(test.cid);
     if (parent && parent.type === TYPE.SUITE) {
       this.testStart(test);
     }
     this.testFinished(test, STATUS.SKIPPED, new Issue("NOT_ISSUE"));
   }
 
-  public testFinished(test, status, issue?) {
-    const parent = this.getParent(test.cid);
+  public testFinished(test: any, status: STATUS, issue?: Issue) {
+    const parent = this.storage.get(test.cid);
     if (parent && parent.type !== TYPE.STEP) {
       return;
     }
 
     const finishTestObj = new TestEndObj(status, issue);
     if (status === STATUS.FAILED) {
-      let message = `Message: ${test.err.message}\n`;
-      message += `Stacktrace: ${test.err.stack}\n`;
+      const message = `${test.err.stack} `;
       finishTestObj.description = `${test.file}\n\`\`\`error\n${message}\n\`\`\``;
       this.client.sendLog(parent.id, {
         level: LEVEL.ERROR,
@@ -188,29 +152,10 @@ class ReportPortalReporter extends EventEmitter {
     const { promise } = this.client.finishTestItem(parent.id, finishTestObj);
     promiseErrorHandler(promise);
 
-    this.clearParent(test.cid);
+    this.storage.clear(test.cid);
   }
 
-  public runnerCommand(command) {
-    if (!this.options.enableSeleniumCommandReporting || this.isMultiremote) {
-      return;
-    }
-
-    const parent = this.getParent(command.cid);
-    if (!parent) {
-      return;
-    }
-
-    const method = `${command.method} ${command.uri.path}`;
-    if (!isEmpty(command.data)) {
-      const data = JSON.stringify(limit(command.data));
-      this.sendLog({ cid: command.cid, level: this.options.seleniumCommandsLogLevel, message: `${method}\n${data}` });
-    } else {
-      this.sendLog({ cid: command.cid, level: this.options.seleniumCommandsLogLevel, message: `${method}` });
-    }
-  }
-
-  public start(event, client) {
+  public start(event: any, client: ReportPortalClient) {
     this.isMultiremote = event.isMultiremote;
     this.client = client || new ReportPortalClient(this.options.rpConfig);
     const { tempId, promise } = this.client.startLaunch({ mode: this.options.rpConfig.mode });
@@ -225,12 +170,31 @@ class ReportPortalReporter extends EventEmitter {
     this.baseReporter.epilogue.call(this.baseReporter);
   }
 
-  public runnerResult(command) {
+  public runnerCommand(command: any) {
+    if (!this.options.enableSeleniumCommandReporting || this.isMultiremote) {
+      return;
+    }
+
+    const parent = this.storage.get(command.cid);
+    if (!parent) {
+      return;
+    }
+
+    const method = `${command.method} ${command.uri.path}`;
+    if (!isEmpty(command.data)) {
+      const data = JSON.stringify(limit(command.data));
+      this.sendLog({ cid: command.cid, level: this.options.seleniumCommandsLogLevel, message: `${method}\n${data}` });
+    } else {
+      this.sendLog({ cid: command.cid, level: this.options.seleniumCommandsLogLevel, message: `${method}` });
+    }
+  }
+
+  public runnerResult(command: any) {
     if (this.isMultiremote) {
       return;
     }
 
-    const parent = this.getParent(command.cid);
+    const parent = this.storage.get(command.cid);
     if (!parent) {
       return;
     }
@@ -259,22 +223,23 @@ class ReportPortalReporter extends EventEmitter {
     }
   }
 
-  public runnerEnd(runner) {
-    const clear = (cid) => {
-      delete this.startedTests[cid];
+  public runnerEnd(runner: any) {
+    const clear = (cid: string) => {
+      this.storage.clearStartedTests(cid);
     };
     setTimeout(clear.bind(this), 5000, runner.cid);
   }
 
   public async sendLogToTest({ cid, test, level, message }) {
-    const failedTest = this.startedTests[cid].slice().reverse().find(({test: startedTest}) => {
-      return startedTest.title === test.title;
+    const testObj = this.storage.getStartedTests(cid).reverse().find((startedTest) => {
+      return startedTest.wdioEntity.title === test.title;
     });
-    if (!failedTest) {
+
+    if (!testObj) {
       this.logger.warn(`Can not send log to test ${test.title}`);
       return;
     }
-    const rs = await failedTest.promise;
+    const rs = await testObj.promise;
 
     const saveLogRQ = {
       item_id: rs.id,
@@ -289,14 +254,14 @@ class ReportPortalReporter extends EventEmitter {
   }
 
   public async sendFileToTest({ cid, test, level, name, content, type = "image/png" }) {
-    const failedTest = this.startedTests[cid].slice().reverse().find(({test: startedTest}) => {
-      return startedTest.title === test.title;
+    const testObj = this.storage.getStartedTests(cid).reverse().find((startedTest) => {
+      return startedTest.wdioEntity.title === test.title;
     });
-    if (!failedTest) {
+    if (!testObj) {
       this.logger.warn(`Can not send file to test ${test.title}`);
       return;
     }
-    const rs = await failedTest.promise;
+    const rs = await testObj.promise;
 
     const saveLogRQ = {
       item_id: rs.id,
@@ -310,7 +275,7 @@ class ReportPortalReporter extends EventEmitter {
   }
 
   public sendLog({ cid, level, message }) {
-    const parent = this.getParent(cid);
+    const parent = this.storage.get(cid);
     if (!parent) {
       this.logger.warn(`Can not send log to test. There is no running tests`);
       return;
@@ -323,7 +288,7 @@ class ReportPortalReporter extends EventEmitter {
   }
 
   public sendFile({ cid, level, name, content, type = "image/png" }) {
-    const parent = this.getParent(cid);
+    const parent = this.storage.get(cid);
     if (!parent) {
       this.logger.warn(`Can not send file to test. There is no running tests`);
       return;
@@ -333,57 +298,6 @@ class ReportPortalReporter extends EventEmitter {
     promiseErrorHandler(promise);
   }
 
-  public getParentIds(cid) {
-    if (this.parents[cid]) {
-      return this.parents[cid];
-    }
-
-    this.parents[cid] = [];
-    return this.parents[cid];
-  }
-}
-
-class SuiteStartObj {
-  public name = "";
-  public description?: string;
-  public tags?: string[];
-  private readonly type = TYPE.SUITE;
-
-  constructor(name: string) {
-    this.name = name;
-  }
-}
-
-class TestStartObj {
-  public name = "";
-  public parameters?: any[];
-  public tags?: any[];
-  private readonly type = TYPE.STEP;
-
-  constructor(name: string) {
-    this.name = name;
-  }
-}
-
-class TestEndObj {
-  public status: STATUS;
-  public issue?: Issue;
-  public description?: string;
-  constructor(status: STATUS, issue: Issue) {
-    this.status = status;
-    if (issue) {
-      this.issue = issue;
-    }
-  }
-}
-
-class Issue {
-  // tslint:disable-next-line
-  public issue_type: string;
-  // tslint:disable-next-line
-  constructor(issue_type) {
-    this.issue_type = issue_type;
-  }
 }
 
 export = ReportPortalReporter;

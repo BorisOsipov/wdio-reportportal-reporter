@@ -107,7 +107,30 @@ export const limit = (val: any) => {
   }
 };
 
-export const parseTags = (text: string): string[] => text.match(TAGS_PATTERN) || [];
+export const addTagsToSuite = (tags, suiteStartObj) => {
+  if (tags && tags.length > 0) {
+    if (tags[0].name) {
+      suiteStartObj.tags = tags.map((tag) => tag.name);
+    } else {
+      suiteStartObj.tags = tags;
+    }
+  }
+};
+
+export const addBrowserParam = (browser, testStartObj) => {
+  if (browser) {
+    const param = {key: "browser", value: browser};
+    testStartObj.parameters = [param];
+  }
+};
+
+export const addDescription = (description, suiteStartObj) => {
+  if (description) {
+    suiteStartObj.description = description;
+  }
+};
+
+export const parseTags = (text: string): string[] => ("" + text).match(TAGS_PATTERN) || [];
 
 export const sendToReporter = (event: any, msg = {}) => {
   process.send({ event, ...msg });
