@@ -8,5 +8,5 @@ export default class ReporterOptions {
   public parseTagsFromTestTitle = false;
   public screenshotsLogLevel = LEVEL.INFO;
   public seleniumCommandsLogLevel = LEVEL.DEBUG;
-  public rpConfig = {mode: MODE.DEFAULT};
+  public rpConfig = {mode: MODE.DEFAULT, tags: [], description: ""};
 }

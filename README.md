@@ -45,7 +45,9 @@ exports.config = {
         screenshotsLogLevel: 'info',
         enableRetriesWorkaround: false,
         parseTagsFromTestTitle: false,
-        debug: false
+        debug: false,
+        description: "Launch description text",
+        tags: ["tags", "for", "launch"],
       }
     },
   // ...
