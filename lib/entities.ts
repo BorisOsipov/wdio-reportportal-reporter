@@ -20,6 +20,9 @@ export class TestStartObj {
 
   constructor(name: string) {
     this.name = name;
+    if (this.name.length > 256) {
+      this.name = this.name.slice(0, 255);
+    }
   }
 
   public addTagsToTest(parseTagsFromTestTitle) {
