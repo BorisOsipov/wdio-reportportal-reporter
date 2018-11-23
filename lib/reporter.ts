@@ -158,7 +158,12 @@ class ReportPortalReporter extends EventEmitter {
   public start(event: any, client: ReportPortalClient) {
     this.isMultiremote = event.isMultiremote;
     this.client = client || new ReportPortalClient(this.options.rpConfig);
-    const { tempId, promise } = this.client.startLaunch({ mode: this.options.rpConfig.mode });
+    const startLaunchObj = {
+      description: this.options.rpConfig.description,
+      mode: this.options.rpConfig.mode,
+      tags: this.options.rpConfig.tags,
+    };
+    const { tempId, promise } = this.client.startLaunch(startLaunchObj);
     promiseErrorHandler(promise);
     this.tempLaunchId = tempId;
   }

@@ -13,12 +13,20 @@ describe("startLaunch", () => {
 
     expect(reporter.tempLaunchId).toEqual("startLaunch");
     expect(reporter.client.startLaunch).toBeCalledTimes(1);
-    expect(reporter.client.startLaunch).toBeCalledWith({mode: options.rpConfig.mode});
+
+    const launchObj = {
+      description: options.rpConfig.description,
+      mode: options.rpConfig.mode,
+      tags: options.rpConfig.tags,
+    };
+    expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
   });
 
-  test("should startLaunch with debug", () => {
+  test("should startLaunch with custom parameters", () => {
     const options = getOptions();
     options.rpConfig.mode = MODE.DEBUG;
+    options.rpConfig.tags = ["foo"];
+    options.rpConfig.description = "bar";
     const reporter = new Reporter(new BaseReporter(), {}, options);
     const client = new RPClient();
 
@@ -26,7 +34,13 @@ describe("startLaunch", () => {
 
     expect(reporter.tempLaunchId).toEqual("startLaunch");
     expect(reporter.client.startLaunch).toBeCalledTimes(1);
-    expect(reporter.client.startLaunch).toBeCalledWith({mode: options.rpConfig.mode});
+
+    const launchObj = {
+      description: options.rpConfig.description,
+      mode: options.rpConfig.mode,
+      tags: options.rpConfig.tags,
+    };
+    expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
   });
 });
 
