@@ -37,7 +37,10 @@ exports.config = {
           launch: 'launch_name',
           project: 'project_name',
           mode: 'DEFAULT',
-          debug: false
+          debug: false,
+          debug: false,
+          description: "Launch description text",
+          tags: ["tags", "for", "launch"],
         },
         enableSeleniumCommandReporting: false,
         enableScreenshotsReporting: false,
@@ -45,9 +48,6 @@ exports.config = {
         screenshotsLogLevel: 'info',
         enableRetriesWorkaround: false,
         parseTagsFromTestTitle: false,
-        debug: false,
-        description: "Launch description text",
-        tags: ["tags", "for", "launch"],
       }
     },
   // ...
