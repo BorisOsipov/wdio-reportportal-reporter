@@ -36,7 +36,7 @@ const config = {
   framework: 'cucumber',
   cucumberOpts: {
     timeout: 20000,
-    require: ['tests/fixtures/features/steps/passing-steps.js', 'tests/fixtures/features/steps/hooks.js'],
+    require: ['test/fixtures/features/steps/passing-steps.js', 'test/fixtures/features/steps/hooks.js'],
     compiler: [
       'js:babel-register',
     ],
@@ -52,7 +52,11 @@ const config = {
   },
 
   onComplete: async function onComplete() {
-    return new Promise(resolve => setTimeout(resolve, 5000));
+    const isLaunchFinished = await reporter.waitLaunchFinished();
+    if(!isLaunchFinished) {
+      console.warn('Launch has not been finished');
+    }
+    console.log('Launch finished');
   },
 
 };

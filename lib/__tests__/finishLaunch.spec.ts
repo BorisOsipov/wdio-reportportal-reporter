@@ -5,11 +5,11 @@ const Reporter = require("../../build/reporter");
 describe("finishLaunch", () => {
   test("should finishLaunch", () => {
     const reporter = new Reporter(new BaseReporter(), {}, getOptions());
-    reporter.client = new RPClient();
+    Reporter.client = new RPClient();
     reporter.tempLaunchId = "foo";
     reporter.end({});
 
-    expect(reporter.client.finishLaunch).toBeCalledTimes(1);
-    expect(reporter.client.finishLaunch).toBeCalledWith(reporter.tempLaunchId, {});
+    expect(Reporter.client.finishLaunch).toBeCalledTimes(1);
+    expect(Reporter.client.finishLaunch).toBeCalledWith(reporter.tempLaunchId, {});
   });
 });

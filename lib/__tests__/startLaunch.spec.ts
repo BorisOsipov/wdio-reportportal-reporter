@@ -12,14 +12,14 @@ describe("startLaunch", () => {
     reporter.start({}, client);
 
     expect(reporter.tempLaunchId).toEqual("startLaunch");
-    expect(reporter.client.startLaunch).toBeCalledTimes(1);
+    expect(Reporter.client.startLaunch).toBeCalledTimes(1);
 
     const launchObj = {
       description: options.rpConfig.description,
       mode: options.rpConfig.mode,
       tags: options.rpConfig.tags,
     };
-    expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
+    expect(Reporter.client.startLaunch).toBeCalledWith(launchObj);
   });
 
   test("should startLaunch with custom parameters", () => {
@@ -33,14 +33,14 @@ describe("startLaunch", () => {
     reporter.start({}, client);
 
     expect(reporter.tempLaunchId).toEqual("startLaunch");
-    expect(reporter.client.startLaunch).toBeCalledTimes(1);
+    expect(Reporter.client.startLaunch).toBeCalledTimes(1);
 
     const launchObj = {
       description: options.rpConfig.description,
       mode: options.rpConfig.mode,
       tags: options.rpConfig.tags,
     };
-    expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
+    expect(Reporter.client.startLaunch).toBeCalledWith(launchObj);
   });
 });
 
