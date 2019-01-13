@@ -12,41 +12,46 @@ The easiest way is to keep `wdio-reportportal-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "wdio-reportportal-reporter": "~0.0.21"
+    "wdio-reportportal-reporter": "~0.0.21",
+    "wdio-reportportal-service": "~0.0.1"
   }
 }
 ```
 You can simple do it by:
 ```bash
-npm install wdio-reportportal-reporter --save-dev
+npm install wdio-reportportal-reporter wdio-reportportal-service --save-dev
 ```
 Instructions on how to install `WebdriverIO` can be found [here](http://webdriver.io/guide/getstarted/install.html).
 ## Configuration
 Configure the output directory in your wdio.conf.js file:
 ```js
 const reportportal = require('wdio-reportportal-reporter');
+const RpService = require("wdio-reportportal-service");
+//how much time will wait till launch finishes. default 5000 ms
+const rpService = new RpService(4000);
 
 exports.config = {
   // ...
+  services: [rpService],
   reporters: [reportportal],
-    reporterOptions: {
-      reportportal: {
-        rpConfig: {
-          token: '00000000-0000-0000-0000-00000000000',
-          endpoint: 'https://reportportal-url/api/v1',
-          launch: 'launch_name',
-          project: 'project_name',
-          mode: 'DEFAULT',
-          debug: false,
-          description: "Launch description text",
-          tags: ["tags", "for", "launch"],
-        },
-        enableSeleniumCommandReporting: false,
-        enableScreenshotsReporting: false,
-        seleniumCommandsLogLevel: 'debug',
-        screenshotsLogLevel: 'info',
-        enableRetriesWorkaround: false,
-        parseTagsFromTestTitle: false,
+  reporterOptions: {
+    reportportal: {
+      rpConfig: {
+        token: '00000000-0000-0000-0000-00000000000',
+        endpoint: 'https://reportportal-url/api/v1',
+        launch: 'launch_name',
+        project: 'project_name',
+        mode: 'DEFAULT',
+        debug: false,
+        description: "Launch description text",
+        tags: ["tags", "for", "launch"],
+      },
+      enableSeleniumCommandReporting: false,
+      enableScreenshotsReporting: false,
+      seleniumCommandsLogLevel: 'debug',
+      screenshotsLogLevel: 'info',
+      enableRetriesWorkaround: false,
+      parseTagsFromTestTitle: false,
       }
     },
   // ...
@@ -85,7 +90,7 @@ Methods `sendLogToTest`\\`sendFileToTest` are useful when you need to send scree
 
 Mocha example:
 ```js
-const reporter = require('wdio-allure-reporter');
+const reporter = require('wdio-reportportal-reporter');
 
 exports.config = {
 ...
@@ -94,7 +99,42 @@ exports.config = {
       const screenshot = await browser.saveScreenshot();
       reporter.sendFileToTest(test, 'error', 'failed.png', screenshot);
     }
+  }
+...
+```
+
+## Advanced options
+
+### Launch id
+Real launchId is available by static variable on reporter: `reporter.launchId`
+
+For example:
+```js
+const reporter = require('wdio-reportportal-reporter');
+
+exports.config = {
+...
+  onComplete: function onComplete() {
+    console.log(`Launch id is: ${reporter.launchId}`);
   },
+...
+```
+### Wait until launch finished
+
+It works out of the box if you setup and use `wdio-reportportal-service`. But if you want you may use following code
+```js
+const reporter = require('wdio-reportportal-reporter');
+
+exports.config = {
+  ...
+  onComplete: async function onComplete() {
+    // default timeout is 5000 ms. Returns false if launch was not finished till timeout
+    const isLaunchFinished = await reporter.waitLaunchFinished(10000);
+    if(!isLaunchFinished) {
+      console.warn('Launch has not been finished');
+    }
+    console.log('Launch finished');
+  }
   ...
 ```
 
