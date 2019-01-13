@@ -17,6 +17,8 @@ import {
 
 class ReportPortalReporter extends EventEmitter {
   public static reporterName = "reportportal";
+  public static launchId;
+  public static client: ReportPortalClient;
 
   public static sendLog(level: LEVEL, message: any) {
     sendToReporter(EVENTS.RP_LOG, { level, message });
@@ -33,11 +35,42 @@ class ReportPortalReporter extends EventEmitter {
   public static sendFileToTest(test: any, level: LEVEL, name: string, content: any, type = "image/png") {
     sendToReporter(EVENTS.RP_TEST_FILE, { test, level, name, content, type });
   }
+
+  public static async waitLaunchFinished(timeout = 5000) {
+    const launchStatusReq = {
+      time: ReportPortalReporter.client.helpers.now(),
+    };
+    const url = [ReportPortalReporter.client.baseURL, `launch/${ReportPortalReporter.launchId}`].join("/");
+    const headers = {headers: ReportPortalReporter.client.headers};
+    const requestFn = ReportPortalReporter.client.helpers.getServerResult;
+
+    const isLaunchFinished = async () => {
+      try {
+        const result = await requestFn(url, launchStatusReq, headers, "GET");
+        return !!result.end_time;
+      } catch (e) {
+        return false;
+      }
+    };
+
+    const sleep = async (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const interval = timeout / 100;
+    while (timeout > 0) {
+      if (await isLaunchFinished()) {
+        return true;
+      }
+      await sleep(interval);
+      timeout -= interval;
+    }
+    return false;
+  }
+
+  public client: ReportPortalClient;
   public storage = new Storage();
   public logger: Logger;
   public tempLaunchId: string;
   public options: ReporterOptions;
-  public client: ReportPortalClient;
   public baseReporter: any;
   public isMultiremote: boolean;
 
@@ -73,7 +106,7 @@ class ReportPortalReporter extends EventEmitter {
     addTagsToSuite(suite.tags, suiteStartObj);
     addDescription(suite.description, suiteStartObj);
     const parent = this.storage.get(suite.cid) || {id: null};
-    const { tempId, promise } = this.client.startTestItem(
+    const { tempId, promise } = ReportPortalReporter.client.startTestItem(
       suiteStartObj,
       this.tempLaunchId,
       parent.id,
@@ -89,7 +122,7 @@ class ReportPortalReporter extends EventEmitter {
     if (this.storage.getStartedTests(suite.cid).length === 0) {
       finishSuiteObj.status = STATUS.FAILED;
     }
-    const { promise } = this.client.finishTestItem(parent.id, finishSuiteObj);
+    const { promise } = ReportPortalReporter.client.finishTestItem(parent.id, finishSuiteObj);
     promiseErrorHandler(promise);
     this.storage.clear(suite.cid);
   }
@@ -106,7 +139,7 @@ class ReportPortalReporter extends EventEmitter {
     addBrowserParam(test.runner[test.cid].browserName, testStartObj);
     testStartObj.addTagsToTest(this.options.parseTagsFromTestTitle);
 
-    const { tempId, promise } = this.client.startTestItem(
+    const { tempId, promise } = ReportPortalReporter.client.startTestItem(
       testStartObj,
       this.tempLaunchId,
       parent.id,
@@ -143,13 +176,13 @@ class ReportPortalReporter extends EventEmitter {
     if (status === STATUS.FAILED) {
       const message = `${test.err.stack} `;
       finishTestObj.description = `${test.file}\n\`\`\`error\n${message}\n\`\`\``;
-      this.client.sendLog(parent.id, {
+      ReportPortalReporter.client.sendLog(parent.id, {
         level: LEVEL.ERROR,
         message,
       });
     }
 
-    const { promise } = this.client.finishTestItem(parent.id, finishTestObj);
+    const { promise } = ReportPortalReporter.client.finishTestItem(parent.id, finishTestObj);
     promiseErrorHandler(promise);
 
     this.storage.clear(test.cid);
@@ -157,19 +190,22 @@ class ReportPortalReporter extends EventEmitter {
 
   public start(event: any, client: ReportPortalClient) {
     this.isMultiremote = event.isMultiremote;
-    this.client = client || new ReportPortalClient(this.options.rpConfig);
+    ReportPortalReporter.client = client || new ReportPortalClient(this.options.rpConfig);
     const startLaunchObj = {
       description: this.options.rpConfig.description,
       mode: this.options.rpConfig.mode,
       tags: this.options.rpConfig.tags,
     };
-    const { tempId, promise } = this.client.startLaunch(startLaunchObj);
+    const { tempId, promise } = ReportPortalReporter.client.startLaunch(startLaunchObj);
     promiseErrorHandler(promise);
     this.tempLaunchId = tempId;
+    promise.then((startLaunchRes) => {
+      ReportPortalReporter.launchId = startLaunchRes.id;
+    });
   }
 
   public async end() {
-    const { promise: finishLaunchPromise } = this.client.finishLaunch(this.tempLaunchId, {});
+    const { promise: finishLaunchPromise } = ReportPortalReporter.client.finishLaunch(this.tempLaunchId, {});
     promiseErrorHandler(finishLaunchPromise);
     await finishLaunchPromise;
     this.baseReporter.epilogue.call(this.baseReporter);
@@ -250,11 +286,11 @@ class ReportPortalReporter extends EventEmitter {
       item_id: rs.id,
       level,
       message,
-      time: this.client.helpers.now(),
+      time: this.now(),
     };
 
-    const url = [this.client.baseURL, "log"].join("/");
-    const promise = this.client.helpers.getServerResult(url, saveLogRQ, { headers: this.client.headers }, "POST");
+    const url = [ReportPortalReporter.client.baseURL, "log"].join("/");
+    const promise = ReportPortalReporter.client.helpers.getServerResult(url, saveLogRQ, { headers: ReportPortalReporter.client.headers }, "POST");
     promiseErrorHandler(promise);
   }
 
@@ -272,10 +308,10 @@ class ReportPortalReporter extends EventEmitter {
       item_id: rs.id,
       level,
       message: "",
-      time: this.client.helpers.now(),
+      time: this.now(),
     };
 
-    const promise = this.client.getRequestLogWithFile(saveLogRQ, { name, content, type });
+    const promise = ReportPortalReporter.client.getRequestLogWithFile(saveLogRQ, { name, content, type });
     promiseErrorHandler(promise);
   }
 
@@ -285,7 +321,7 @@ class ReportPortalReporter extends EventEmitter {
       this.logger.warn(`Can not send log to test. There is no running tests`);
       return;
     }
-    const { promise } = this.client.sendLog(parent.id, {
+    const { promise } = ReportPortalReporter.client.sendLog(parent.id, {
       level,
       message: String(message),
     });
@@ -299,8 +335,12 @@ class ReportPortalReporter extends EventEmitter {
       return;
     }
 
-    const { promise } = this.client.sendLog(parent.id, { level }, { name, content, type });
+    const { promise } = ReportPortalReporter.client.sendLog(parent.id, { level }, { name, content, type });
     promiseErrorHandler(promise);
+  }
+
+  private now() {
+    return ReportPortalReporter.client.helpers.now();
   }
 
 }
