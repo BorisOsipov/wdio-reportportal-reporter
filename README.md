@@ -121,14 +121,14 @@ exports.config = {
 ```
 ### Wait until launch finished
 
-It work out of the box if you setup and use `wdio-reportportal-service`. But if you want you may use following code
+It works out of the box if you setup and use `wdio-reportportal-service`. But if you want you may use following code
 ```js
 const reporter = require('wdio-reportportal-reporter');
 
 exports.config = {
   ...
   onComplete: async function onComplete() {
-    // default timeout is 5000 ms
+    // default timeout is 5000 ms. Returns false if launch was not finished till timeout
     const isLaunchFinished = await reporter.waitLaunchFinished(10000);
     if(!isLaunchFinished) {
       console.warn('Launch has not been finished');
