@@ -27,7 +27,7 @@ Configure the output directory in your wdio.conf.js file:
 ```js
 const reportportal = require('wdio-reportportal-reporter');
 const RpService = require("wdio-reportportal-service");
-//how much time wait till launch finishes. default 5000 ms
+//how much time will wait till launch finishes. default 5000 ms
 const rpService = new RpService(4000);
 
 exports.config = {
