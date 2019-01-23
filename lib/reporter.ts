@@ -1,3 +1,4 @@
+import {createHash} from "crypto";
 import {EventEmitter} from "events";
 import * as ReportPortalClient from "reportportal-client";
 import {EVENTS, LEVEL, STATUS, TYPE} from "./constants";
@@ -310,8 +311,9 @@ class ReportPortalReporter extends EventEmitter {
       message: "",
       time: this.now(),
     };
-
-    const promise = ReportPortalReporter.client.getRequestLogWithFile(saveLogRQ, { name, content, type });
+    // to avoid https://github.com/BorisOsipov/wdio-reportportal-reporter/issues/42#issuecomment-456573592
+    const fileName = createHash("md5").update(name).digest("hex");
+    const promise = ReportPortalReporter.client.getRequestLogWithFile(saveLogRQ, { name: fileName, content, type });
     promiseErrorHandler(promise);
   }
 

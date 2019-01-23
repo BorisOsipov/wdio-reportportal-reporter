@@ -16,4 +16,9 @@ describe('test footer', function () {
     assert.isTrue(false, 'test 2 failed')
   })
 
+  it('Verify saving/unsaving a recipe from RDP for FT user -env prod -feature freetrial', function () {
+    browser.url('https://www.google.com');
+    assert.isTrue(false, 'test should fail!!!!!')
+  });
+
 });
