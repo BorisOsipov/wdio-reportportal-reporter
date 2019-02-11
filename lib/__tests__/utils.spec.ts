@@ -1,5 +1,5 @@
 import {SuiteStartObj, TestStartObj} from "../entities";
-import {addBrowserParam, addDescription, addTagsToSuite, parseTags} from "../utils";
+import {addBrowserParam, addDescription, addTagsToSuite, getBrowserDescription, parseTags} from "../utils";
 
 describe("#addTagsToSuite",  () => {
    test("should not add empty array of tags startSuite", () => {
@@ -73,4 +73,53 @@ describe("#parseTags",  () => {
      expect(parseTags("@fo1o Some text @2bar")).toEqual(["@fo1o", "@2bar"]);
      expect(parseTags("@foo-me Some text @bar_ce test")).toEqual(["@foo-me", "@bar_ce"]);
    });
+});
+
+describe("#getBrowserDescription",  () => {
+  test("should return empty string for empty capabilities", () => {
+    expect(getBrowserDescription(undefined, "1-1")).toEqual("");
+    expect(getBrowserDescription({}, "1-1")).toEqual("");
+    expect(getBrowserDescription(null, "1-1")).toEqual("");
+  });
+
+  test("should return full browser description", () => {
+    const browserDescription = getBrowserDescription(    {
+      browserName: "chrome",
+      platform: "WINDOWS",
+      version: "72",
+    }, "1-1");
+    expect(browserDescription).toEqual("Chrome v.72 on Windows");
+  });
+
+  test("should omit platform if it is empty", () => {
+    const browserDescription = getBrowserDescription(    {
+      browserName: "safari",
+      version: "42",
+    }, "1-1");
+    expect(browserDescription).toEqual("Safari v.42");
+  });
+
+  test("should omit version if it is empty", () => {
+    const browserDescription = getBrowserDescription(    {
+      browserName: "safari",
+      platform: "MAC",
+    }, "1-1");
+    expect(browserDescription).toEqual("Safari on Mac");
+  });
+
+  test("should omit version, platform if it is empty", () => {
+    const browserDescription = getBrowserDescription(    {
+      browserName: "safari",
+    }, "1-1");
+    expect(browserDescription).toEqual("Safari");
+  });
+
+  test("should use deviceName/platformVersion for mobile", () => {
+    const browserDescription = getBrowserDescription(    {
+      deviceName: "android",
+      platform: "WINDOWS",
+      platformVersion: "72",
+    }, "1-1");
+    expect(browserDescription).toEqual("Android v.72 on Windows");
+  });
 });

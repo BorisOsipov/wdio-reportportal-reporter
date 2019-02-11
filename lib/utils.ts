@@ -130,6 +130,27 @@ export const addDescription = (description, suiteStartObj) => {
   }
 };
 
+export const getBrowserDescription = (capabilities, cid) => {
+  if (capabilities && !isEmpty(capabilities)) {
+    const targetName = capitalizeFirstLetter(capabilities.browserName || capabilities.deviceName || cid);
+    const version = capabilities.version || capabilities.platformVersion;
+    const browser = version ? `${targetName} v.${version}` : `${targetName}`;
+    const browserWithPlatform = capabilities.platform ?
+      `${browser} on ${capitalizeFirstLetter(capabilities.platform)}`
+      : browser;
+
+    return browserWithPlatform;
+  }
+  return "";
+};
+
+const capitalizeFirstLetter = (val: string) => {
+  if (val) {
+    return val.charAt(0).toUpperCase() + val.toLowerCase().slice(1);
+  }
+  return val;
+};
+
 export const parseTags = (text: string): string[] => ("" + text).match(TAGS_PATTERN) || [];
 
 export const sendToReporter = (event: any, msg = {}) => {

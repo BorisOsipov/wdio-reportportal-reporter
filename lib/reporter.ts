@@ -9,6 +9,7 @@ import {
   addBrowserParam,
   addDescription,
   addTagsToSuite,
+  getBrowserDescription,
   isEmpty,
   limit,
   Logger,
@@ -102,11 +103,12 @@ class ReportPortalReporter extends EventEmitter {
     this.on(EVENTS.RP_TEST_FILE, this.sendFileToTest.bind(this));
   }
 
- public suiteStart(suite: any) {
+  public suiteStart(suite: any) {
+    const cid = suite.cid;
     const suiteStartObj = new SuiteStartObj(suite.title);
     addTagsToSuite(suite.tags, suiteStartObj);
-    addDescription(suite.description, suiteStartObj);
-    const parent = this.storage.get(suite.cid) || {id: null};
+    addDescription(getBrowserDescription(suite.runner[cid], cid), suiteStartObj);
+    const parent = this.storage.get(cid) || {id: null};
     const { tempId, promise } = ReportPortalReporter.client.startTestItem(
       suiteStartObj,
       this.tempLaunchId,

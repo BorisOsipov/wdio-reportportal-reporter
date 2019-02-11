@@ -18,7 +18,7 @@ describe("startSuite", () => {
 
     expect(Reporter.client.startTestItem).toBeCalledTimes(1);
     expect(Reporter.client.startTestItem).toBeCalledWith(
-      {description: "baz", name: "foo", type: TYPE.SUITE},
+      {name: "foo", type: TYPE.SUITE},
       reporter.tempLaunchId,
       null,
     );
@@ -29,7 +29,7 @@ describe("startSuite", () => {
 
     expect(Reporter.client.startTestItem).toBeCalledTimes(1);
     expect(Reporter.client.startTestItem).toBeCalledWith(
-      {description: "baz", name: "foo", type: TYPE.SUITE, tags: ["bar"]},
+      {name: "foo", type: TYPE.SUITE, tags: ["bar"]},
       reporter.tempLaunchId,
       null,
     );
@@ -53,7 +53,7 @@ describe("startSuite", () => {
     expect(Reporter.client.startTestItem).toBeCalledTimes(2);
     expect(Reporter.client.startTestItem).toHaveBeenNthCalledWith(
       1,
-      {description: "baz", name: "foo", type: TYPE.SUITE},
+      {name: "foo", type: TYPE.SUITE},
       reporter.tempLaunchId,
       null,
     );
@@ -61,7 +61,7 @@ describe("startSuite", () => {
     const {id} = reporter.storage.get(suiteStartEvent().cid);
     expect(Reporter.client.startTestItem).toHaveBeenNthCalledWith(
       2,
-      {description: "baz", name: "foo", type: TYPE.SUITE},
+      {name: "foo", type: TYPE.SUITE},
       reporter.tempLaunchId,
       id,
     );
