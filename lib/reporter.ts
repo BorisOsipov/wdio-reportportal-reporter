@@ -39,6 +39,10 @@ class ReportPortalReporter extends EventEmitter {
   }
 
   public static async waitLaunchFinished(timeout = 5000) {
+    if (!ReportPortalReporter.client) {
+      return false;
+    }
+
     const launchStatusReq = {
       time: ReportPortalReporter.client.helpers.now(),
     };
@@ -68,7 +72,6 @@ class ReportPortalReporter extends EventEmitter {
     return false;
   }
 
-  public client: ReportPortalClient;
   public storage = new Storage();
   public logger: Logger;
   public tempLaunchId: string;
