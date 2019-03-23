@@ -1,6 +1,6 @@
 import {createHash} from "crypto";
 import {EventEmitter} from "events";
-import * as ReportPortalClient from "reportportal-client";
+import * as ReportPortalClient from "reportportal-js-client";
 import {EVENTS, LEVEL, STATUS, TYPE} from "./constants";
 import {Issue, StorageEntity, SuiteStartObj, TestEndObj, TestStartObj} from "./entities";
 import ReporterOptions from "./ReporterOptions";
