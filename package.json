@@ -35,7 +35,7 @@
   "homepage": "https://github.com/borisosipov/wdio-reportportal-reporter#readme",
   "dependencies": {
     "json-stringify-safe": "~5.0.1",
-    "reportportal-client": "https://github.com/reportportal/client-javascript.git#b09e49b"
+    "reportportal-js-client": "^1.0.1"
   },
   "devDependencies": {
     "@types/jest": "^24.0.0",
