@@ -1,4 +1,0 @@
---timeout 66000
---ui bdd
---require ts-node/register
-test/specs/*.ts

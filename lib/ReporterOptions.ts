@@ -2,11 +2,10 @@ import {LEVEL, MODE} from "./constants";
 
 export default class ReporterOptions {
   public debug = false;
-  public enableRetriesWorkaround = false;
-  public enableScreenshotsReporting = false;
-  public enableSeleniumCommandReporting = false;
-  public parseTagsFromTestTitle = false;
+  public autoAttachScreenshots = false;
   public screenshotsLogLevel = LEVEL.INFO;
+  public reportSeleniumCommands = false;
   public seleniumCommandsLogLevel = LEVEL.DEBUG;
-  public rpConfig = {mode: MODE.DEFAULT, tags: [], description: ""};
+  public parseTagsFromTestTitle = false;
+  public reportPortalClientConfig = {mode: MODE.DEFAULT, tags: [], description: ""};
 }

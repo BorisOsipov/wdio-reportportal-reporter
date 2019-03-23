@@ -1,41 +1,53 @@
-import {SuiteStartObj, TestStartObj} from "../entities";
-import {addBrowserParam, addDescription, addTagsToSuite, getBrowserDescription, parseTags} from "../utils";
+import {TYPE} from "../constants";
+import {StartTestItem} from "../entities";
+import {addBrowserParam, addDescription, isScreenshotCommand, parseTags, sendToReporter} from "../utils";
 
-describe("#addTagsToSuite",  () => {
-   test("should not add empty array of tags startSuite", () => {
-     const suiteStartObj = new SuiteStartObj("foo");
-     addTagsToSuite([], suiteStartObj);
-     expect(suiteStartObj.tags).toBeUndefined();
-   });
+let processEmit;
 
-   test("should add tags startSuite", () => {
-     const suiteStartObj = new SuiteStartObj("foo");
-     addTagsToSuite([{name: "bar"}, {name: "baz"}], suiteStartObj);
-     expect(suiteStartObj.tags).toEqual(["bar", "baz"]);
-   });
+describe("utils#sendToReporter", () => {
+  beforeAll(() => {
+    processEmit = process.emit;
+    process.emit = jest.fn();
+  });
 
-   test("should add tags startSuite", () => {
-     const suiteStartObj = new SuiteStartObj("foo");
-     addTagsToSuite(["bar", "baz"], suiteStartObj);
-     expect(suiteStartObj.tags).toEqual(["bar", "baz"]);
-   });
+  afterAll(() => {
+    process.emit = processEmit;
+  });
 
-   test("should add tags startSuite", () => {
-     const suiteStartObj = new SuiteStartObj("foo");
-     addTagsToSuite(undefined, suiteStartObj);
-     expect(suiteStartObj.tags).toBeUndefined();
-   });
+  afterEach(() => {
+    // @ts-ignore
+    process.emit.mockClear();
+  });
+
+  test("should accept message", () => {
+    sendToReporter("foo", {bar: "baz"});
+    expect(process.emit).toHaveBeenCalledTimes(1);
+    expect(process.emit).toHaveBeenCalledWith("foo", {bar: "baz"});
+  });
+
+  test("should accept no message", () => {
+    sendToReporter("foo");
+    expect(process.emit).toHaveBeenCalledTimes(1);
+    expect(process.emit).toHaveBeenCalledWith("foo", {});
+  });
 });
 
 describe("#addBrowserParam",  () => {
    test("should add browser name as parameter", () => {
-     const testStartObj = new TestStartObj("foo");
+     const testStartObj = new StartTestItem("foo", TYPE.TEST);
      addBrowserParam("foo", testStartObj);
      expect(testStartObj.parameters).toEqual([{key: "browser", value: "foo"}]);
    });
 
+   test("should not clear other params", () => {
+     const testStartObj = new StartTestItem("foo", TYPE.TEST);
+     testStartObj.parameters = ["bar"];
+     addBrowserParam("foo", testStartObj);
+     expect(testStartObj.parameters).toEqual(["bar", {key: "browser", value: "foo"}]);
+   });
+
    test("should not add if missing", () => {
-     const testStartObj = new TestStartObj("foo");
+     const testStartObj = new StartTestItem("foo", TYPE.TEST);
      addBrowserParam(undefined, testStartObj);
      expect(testStartObj.parameters).toBeUndefined();
    });
@@ -43,13 +55,13 @@ describe("#addBrowserParam",  () => {
 
 describe("#addDescription",  () => {
    test("should add suite description", () => {
-     const suiteStartObj = new SuiteStartObj("foo");
+     const suiteStartObj = new StartTestItem("foo", TYPE.SUITE);
      addDescription("foo", suiteStartObj);
      expect(suiteStartObj.description).toEqual("foo");
    });
 
    test("should not add if missing", () => {
-     const suiteStartObj = new SuiteStartObj("foo");
+     const suiteStartObj = new StartTestItem("foo", TYPE.SUITE);
      addDescription(undefined, suiteStartObj);
      expect(suiteStartObj.description).toBeUndefined();
    });
@@ -75,51 +87,10 @@ describe("#parseTags",  () => {
    });
 });
 
-describe("#getBrowserDescription",  () => {
-  test("should return empty string for empty capabilities", () => {
-    expect(getBrowserDescription(undefined, "1-1")).toEqual("");
-    expect(getBrowserDescription({}, "1-1")).toEqual("");
-    expect(getBrowserDescription(null, "1-1")).toEqual("");
-  });
-
-  test("should return full browser description", () => {
-    const browserDescription = getBrowserDescription(    {
-      browserName: "chrome",
-      platform: "WINDOWS",
-      version: "72",
-    }, "1-1");
-    expect(browserDescription).toEqual("Chrome v.72 on Windows");
-  });
-
-  test("should omit platform if it is empty", () => {
-    const browserDescription = getBrowserDescription(    {
-      browserName: "safari",
-      version: "42",
-    }, "1-1");
-    expect(browserDescription).toEqual("Safari v.42");
-  });
-
-  test("should omit version if it is empty", () => {
-    const browserDescription = getBrowserDescription(    {
-      browserName: "safari",
-      platform: "MAC",
-    }, "1-1");
-    expect(browserDescription).toEqual("Safari on Mac");
-  });
-
-  test("should omit version, platform if it is empty", () => {
-    const browserDescription = getBrowserDescription(    {
-      browserName: "safari",
-    }, "1-1");
-    expect(browserDescription).toEqual("Safari");
-  });
-
-  test("should use deviceName/platformVersion for mobile", () => {
-    const browserDescription = getBrowserDescription(    {
-      deviceName: "android",
-      platform: "WINDOWS",
-      platformVersion: "72",
-    }, "1-1");
-    expect(browserDescription).toEqual("Android v.72 on Windows");
+describe("#isScreenshotCommand",  () => {
+  test("isScreenshotCommand", () => {
+    expect(isScreenshotCommand({endpoint: "/session/id/screenshot"})).toEqual(true);
+    expect(isScreenshotCommand({endpoint: "/wd/hub/session/id/screenshot"})).toEqual(true);
+    expect(isScreenshotCommand({endpoint: "/session/id/click"})).toEqual(false);
   });
 });

@@ -1,46 +1,35 @@
 import {STATUS, TYPE} from "./constants";
 import {parseTags} from "./utils";
 
-export class SuiteStartObj {
+export class StartTestItem {
   public name = "";
-  public description?: string;
-  public tags?: string[];
-  private readonly type = TYPE.SUITE;
-
-  constructor(name: string) {
-    this.name = name;
-  }
-}
-
-export class TestStartObj {
-  public name = "";
+  public description;
   public parameters?: any[];
   public tags?: any[];
-  public readonly type = TYPE.STEP;
+  public type: TYPE;
 
-  constructor(name: string) {
+  constructor(name: string, type: TYPE) {
     this.name = name;
+    this.type = type;
     if (this.name.length > 256) {
       this.name = this.name.slice(0, 256);
     }
   }
 
-  public addTagsToTest(parseTagsFromTestTitle) {
-    if (parseTagsFromTestTitle) {
-      const tags = parseTags(this.name);
-      if (tags.length > 0) {
-        this.tags = tags;
-      }
+  public addTagsToTest() {
+    const tags = parseTags(this.name);
+    if (tags.length > 0) {
+      this.tags = tags;
     }
   }
 }
 
-export class TestEndObj {
+export class EndTestItem {
   public status: STATUS;
   public issue?: Issue;
   public description?: string;
 
-  constructor(status: STATUS, issue: Issue) {
+  constructor(status: STATUS, issue?: Issue) {
     this.status = status;
     if (issue) {
       this.issue = issue;
@@ -59,12 +48,12 @@ export class Issue {
 }
 
 export class StorageEntity {
-  public readonly type: TYPE.STEP | TYPE.SUITE;
+  public readonly type: TYPE;
   public readonly id: string;
   public readonly promise: Promise<any>;
   public readonly wdioEntity: any;
 
-  constructor(type: TYPE.STEP | TYPE.SUITE, id: string, promise: Promise<any>, wdioEntity: any) {
+  constructor(type: TYPE, id: string, promise: Promise<any>, wdioEntity: any) {
     this.type = type;
     this.id = id;
     this.promise = promise;

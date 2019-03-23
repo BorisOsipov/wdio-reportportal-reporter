@@ -1,15 +1,12 @@
 import {LEVEL} from "../constants";
-import {BaseReporter, getOptions} from "./reportportal-client.mock";
+import {getOptions} from "./reportportal-client.mock";
 
 const Reporter = require("../../build/reporter");
 
 describe("constructor", () => {
   test("should store configuration data", () => {
     const options = getOptions();
-    const baseReporter = new BaseReporter();
-    const config = {foo: "bar"};
-    const reporter = new Reporter(baseReporter, config, options);
-    expect(reporter.baseReporter).toEqual(baseReporter);
+    const reporter = new Reporter(options);
     expect(reporter.options).toEqual(options);
   });
 
@@ -17,8 +14,14 @@ describe("constructor", () => {
     const options = getOptions();
     options.debug = true;
     options.screenshotsLogLevel = LEVEL.TRACE;
-    const reporter = new Reporter(new BaseReporter(), {foo: "bar"}, options);
+    const reporter = new Reporter(options);
     expect(reporter.options.debug).toEqual(true);
     expect(reporter.options.screenshotsLogLevel).toEqual(LEVEL.TRACE);
+  });
+
+  test("should override default options", () => {
+    const options = getOptions();
+    const reporter = new Reporter(options);
+    expect(reporter.isSynchronised).toEqual(false);
   });
 });

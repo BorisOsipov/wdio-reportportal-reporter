@@ -1,13 +1,13 @@
 import {TYPE} from "../constants";
-import {TestStartObj} from "../entities";
+import {StartTestItem} from "../entities";
 
 function getStringWithLength(length: number) {
   return new Array(length + 1).join("S");
 }
 
-describe("TestStartObj", () => {
+describe("StartTestItem", () => {
   test("should store name and default parameters", () => {
-    const testStartObj = new TestStartObj("foo");
+    const testStartObj = new StartTestItem("foo", TYPE.STEP);
 
     expect(testStartObj.name).toEqual("foo");
     expect(testStartObj.type).toEqual(TYPE.STEP);
@@ -16,9 +16,9 @@ describe("TestStartObj", () => {
   });
 
   test("should trim long names", () => {
-    expect(new TestStartObj(getStringWithLength(257)).name.length).toEqual(256);
-    expect(new TestStartObj(getStringWithLength(256)).name.length).toEqual(256);
-    expect(new TestStartObj(getStringWithLength(255)).name.length).toEqual(255);
+    expect(new StartTestItem(getStringWithLength(257), TYPE.STEP).name.length).toEqual(256);
+    expect(new StartTestItem(getStringWithLength(256), TYPE.STEP).name.length).toEqual(256);
+    expect(new StartTestItem(getStringWithLength(255), TYPE.STEP).name.length).toEqual(255);
   });
 
 });
