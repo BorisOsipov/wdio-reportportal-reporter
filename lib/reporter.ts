@@ -1,289 +1,270 @@
+import logger from "@wdio/logger";
+import Reporter from "@wdio/reporter";
 import {createHash} from "crypto";
-import {EventEmitter} from "events";
-import * as ReportPortalClient from "reportportal-client";
+import * as ReportPortalClient from "reportportal-js-client";
 import {EVENTS, LEVEL, STATUS, TYPE} from "./constants";
-import {Issue, StorageEntity, SuiteStartObj, TestEndObj, TestStartObj} from "./entities";
+import {EndTestItem, Issue, StartTestItem, StorageEntity} from "./entities";
 import ReporterOptions from "./ReporterOptions";
 import {Storage} from "./storage";
-import {
-  addBrowserParam,
-  addDescription,
-  addTagsToSuite,
-  getBrowserDescription,
-  isEmpty,
-  limit,
-  Logger,
-  promiseErrorHandler,
-  sendToReporter,
-} from "./utils";
+import {addBrowserParam, isEmpty, isScreenshotCommand, limit, promiseErrorHandler, sendToReporter} from "./utils";
 
-class ReportPortalReporter extends EventEmitter {
-  public static reporterName = "reportportal";
-  public static launchId;
-  public static client: ReportPortalClient;
+const log = logger("wdio-reportportal-reporter");
+
+class ReportPortalReporter extends Reporter {
+
+  private get isSynchronised(): boolean {
+    return this.rpPromisesCompleted;
+  }
+
+  private set isSynchronised(value: boolean) {
+    this.rpPromisesCompleted = value;
+  }
 
   public static sendLog(level: LEVEL, message: any) {
-    sendToReporter(EVENTS.RP_LOG, { level, message });
+    sendToReporter(EVENTS.RP_LOG, {level, message});
   }
 
   public static sendFile(level: LEVEL, name: string, content: any, type = "image/png") {
-    sendToReporter(EVENTS.RP_FILE, { level, name, content, type });
+    sendToReporter(EVENTS.RP_FILE, {level, name, content, type});
   }
 
   public static sendLogToTest(test: any, level: LEVEL, message: any) {
-    sendToReporter(EVENTS.RP_TEST_LOG, { test, level, message });
+    sendToReporter(EVENTS.RP_TEST_LOG, {test, level, message});
   }
 
   public static sendFileToTest(test: any, level: LEVEL, name: string, content: any, type = "image/png") {
-    sendToReporter(EVENTS.RP_TEST_FILE, { test, level, name, content, type });
+    sendToReporter(EVENTS.RP_TEST_FILE, {test, level, name, content, type});
   }
 
-  public static async waitLaunchFinished(timeout = 5000) {
-    if (!ReportPortalReporter.client) {
-      return false;
-    }
+  private static reporterName = "reportportal";
+  private launchId: string;
+  private client: ReportPortalClient;
+  private storage = new Storage();
+  private tempLaunchId: string;
+  private readonly options: ReporterOptions;
+  private isMultiremote: boolean;
+  private sanitizedCapabilities: string;
+  private rpPromisesCompleted = false;
 
-    const launchStatusReq = {
-      time: ReportPortalReporter.client.helpers.now(),
-    };
-    const url = [ReportPortalReporter.client.baseURL, `launch/${ReportPortalReporter.launchId}`].join("/");
-    const headers = {headers: ReportPortalReporter.client.headers};
-    const requestFn = ReportPortalReporter.client.helpers.getServerResult;
-
-    const isLaunchFinished = async () => {
-      try {
-        const result = await requestFn(url, launchStatusReq, headers, "GET");
-        return !!result.end_time;
-      } catch (e) {
-        return false;
-      }
-    };
-
-    const sleep = async (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-    const interval = timeout / 100;
-    while (timeout > 0) {
-      if (await isLaunchFinished()) {
-        return true;
-      }
-      await sleep(interval);
-      timeout -= interval;
-    }
-    return false;
-  }
-
-  public storage = new Storage();
-  public logger: Logger;
-  public tempLaunchId: string;
-  public options: ReporterOptions;
-  public baseReporter: any;
-  public isMultiremote: boolean;
-
-  constructor(baseReporter: any, config: any, options: ReporterOptions) {
-    super();
-    this.baseReporter = baseReporter;
-    this.logger = new Logger(options.debug);
+  constructor(options: any) {
+    super(Object.assign({stdout: true}, options));
     this.options = Object.assign(new ReporterOptions(), options);
-
-    // Test framework events
-    this.on("suite:start", this.suiteStart.bind(this));
-    this.on("suite:end", this.suiteEnd.bind(this));
-    this.on("test:start", this.testStart.bind(this));
-    this.on("test:pass", this.testPass.bind(this));
-    this.on("test:fail", this.testFail.bind(this));
-    this.on("test:pending", this.testPending.bind(this));
-
-    this.on("start", this.start.bind(this));
-    this.on("end", this.end.bind(this));
-    this.on("runner:command", this.runnerCommand.bind(this));
-    this.on("runner:result", this.runnerResult.bind(this));
-    this.on("runner:end", this.runnerEnd.bind(this));
-
-    // Rp events
-    this.on(EVENTS.RP_LOG, this.sendLog.bind(this));
-    this.on(EVENTS.RP_FILE, this.sendFile.bind(this));
-    this.on(EVENTS.RP_TEST_LOG, this.sendLogToTest.bind(this));
-    this.on(EVENTS.RP_TEST_FILE, this.sendFileToTest.bind(this));
+    this.registerListeners();
   }
 
-  public suiteStart(suite: any) {
-    const cid = suite.cid;
-    const suiteStartObj = new SuiteStartObj(suite.title);
-    addTagsToSuite(suite.tags, suiteStartObj);
-    addDescription(getBrowserDescription(suite.runner[cid], cid), suiteStartObj);
-    const parent = this.storage.get(cid) || {id: null};
-    const { tempId, promise } = ReportPortalReporter.client.startTestItem(
+  private onSuiteStart(suite: any) {
+    log.trace(`Start suite ${suite.title} ${suite.uid}`);
+    const suiteStartObj = new StartTestItem(suite.title, TYPE.SUITE);
+    const suiteItem = this.storage.getCurrentSuite();
+    let parentId = null;
+    if (suiteItem !== null) {
+      parentId = suiteItem.id;
+    }
+    suiteStartObj.description = this.sanitizedCapabilities;
+    const {tempId, promise} = this.client.startTestItem(
       suiteStartObj,
       this.tempLaunchId,
-      parent.id,
+      parentId,
     );
     promiseErrorHandler(promise);
-
-    this.storage.add(suite.cid, new StorageEntity(TYPE.SUITE, tempId, promise, suite));
+    this.storage.addSuite(new StorageEntity(suiteStartObj.type, tempId, promise, suite));
   }
 
-  public suiteEnd(suite: any) {
-    const parent = this.storage.get(suite.cid);
+  private onSuiteEnd(suite: any) {
+    log.trace(`End suite ${suite.title} ${suite.uid}`);
+    const suiteItem = this.storage.getCurrentSuite();
     const finishSuiteObj = {status: STATUS.PASSED};
-    if (this.storage.getStartedTests(suite.cid).length === 0) {
-      finishSuiteObj.status = STATUS.FAILED;
-    }
-    const { promise } = ReportPortalReporter.client.finishTestItem(parent.id, finishSuiteObj);
+    const {promise} = this.client.finishTestItem(suiteItem.id, finishSuiteObj);
     promiseErrorHandler(promise);
-    this.storage.clear(suite.cid);
+    this.storage.removeSuite();
   }
 
-  public testStart(test: any) {
-    if (!test.title) {
+  private onTestStart(test: any, type = TYPE.STEP) {
+    log.trace(`Start test ${test.title} ${test.uid}`);
+    if (this.storage.getCurrentTest()) {
       return;
     }
-    const parent = this.storage.get(test.cid);
-    if (parent.type === TYPE.STEP && this.options.enableRetriesWorkaround) {
-      return;
+    const suite = this.storage.getCurrentSuite();
+    const testStartObj = new StartTestItem(test.title, type);
+    if (this.options.parseTagsFromTestTitle) {
+      testStartObj.addTagsToTest();
     }
-    const testStartObj = new TestStartObj(test.title);
-    addBrowserParam(test.runner[test.cid].browserName, testStartObj);
-    testStartObj.addTagsToTest(this.options.parseTagsFromTestTitle);
+    addBrowserParam(this.sanitizedCapabilities, testStartObj);
 
-    const { tempId, promise } = ReportPortalReporter.client.startTestItem(
+    const {tempId, promise} = this.client.startTestItem(
       testStartObj,
       this.tempLaunchId,
-      parent.id,
+      suite.id,
     );
     promiseErrorHandler(promise);
 
-    this.storage.add(test.cid, new StorageEntity(TYPE.STEP, tempId, promise, test));
+    this.storage.addTest(test.uid, new StorageEntity(testStartObj.type, tempId, promise, test));
     return promise;
   }
 
-  public testPass(test: any) {
+  private onTestPass(test: any) {
+    log.trace(`Pass test ${test.title} ${test.uid}`);
     this.testFinished(test, STATUS.PASSED);
   }
 
-  public testFail(test: any) {
+  private onTestFail(test: any) {
+    log.trace(`Fail test ${test.title} ${test.uid} ${test.error.stack}`);
+    const testItem = this.storage.getCurrentTest();
+    if (testItem === null) {
+      this.onTestStart(test, TYPE.BEFORE_METHOD);
+    }
     this.testFinished(test, STATUS.FAILED);
   }
 
-  public testPending(test: any) {
-    const parent = this.storage.get(test.cid);
-    if (parent && parent.type === TYPE.SUITE) {
-      this.testStart(test);
+  private onTestSkip(test: any) {
+    log.trace(`Skip test ${test.title} ${test.uid}`);
+    const testItem = this.storage.getCurrentTest();
+    if (testItem === null) {
+      this.onTestStart(test);
     }
     this.testFinished(test, STATUS.SKIPPED, new Issue("NOT_ISSUE"));
   }
 
-  public testFinished(test: any, status: STATUS, issue?: Issue) {
-    const parent = this.storage.get(test.cid);
-    if (parent && parent.type !== TYPE.STEP) {
+  private testFinished(test: any, status: STATUS, issue ?: Issue) {
+    log.trace(`Finish test ${test.title} ${test.uid}`);
+    const testItem = this.storage.getCurrentTest();
+    if (testItem === null) {
       return;
     }
 
-    const finishTestObj = new TestEndObj(status, issue);
+    const finishTestObj = new EndTestItem(status, issue);
     if (status === STATUS.FAILED) {
-      const message = `${test.err.stack} `;
-      finishTestObj.description = `${test.file}\n\`\`\`error\n${message}\n\`\`\``;
-      ReportPortalReporter.client.sendLog(parent.id, {
+      const message = `${test.error.stack} `;
+      finishTestObj.description = `❌ ${message}`;
+      this.client.sendLog(testItem.id, {
         level: LEVEL.ERROR,
         message,
       });
     }
 
-    const { promise } = ReportPortalReporter.client.finishTestItem(parent.id, finishTestObj);
+    const {promise} = this.client.finishTestItem(testItem.id, finishTestObj);
     promiseErrorHandler(promise);
 
-    this.storage.clear(test.cid);
+    this.storage.removeTest(testItem);
   }
 
-  public start(event: any, client: ReportPortalClient) {
-    this.isMultiremote = event.isMultiremote;
-    ReportPortalReporter.client = client || new ReportPortalClient(this.options.rpConfig);
+  private onRunnerStart(runner: any, client: ReportPortalClient) {
+    log.trace(`Runner start`);
+    this.isMultiremote = runner.isMultiremote;
+    this.sanitizedCapabilities = runner.sanitizedCapabilities;
+    this.client = client || new ReportPortalClient(this.options.reportPortalClientConfig);
+    this.launchId = process.env.RP_LAUNCH_ID;
     const startLaunchObj = {
-      description: this.options.rpConfig.description,
-      mode: this.options.rpConfig.mode,
-      tags: this.options.rpConfig.tags,
+      description: this.options.reportPortalClientConfig.description,
+      id: this.launchId,
+      mode: this.options.reportPortalClientConfig.mode,
+      tags: this.options.reportPortalClientConfig.tags,
     };
-    const { tempId, promise } = ReportPortalReporter.client.startLaunch(startLaunchObj);
-    promiseErrorHandler(promise);
+    const {tempId} = this.client.startLaunch(startLaunchObj);
     this.tempLaunchId = tempId;
-    promise.then((startLaunchRes) => {
-      ReportPortalReporter.launchId = startLaunchRes.id;
-    });
   }
 
-  public async end() {
-    const { promise: finishLaunchPromise } = ReportPortalReporter.client.finishLaunch(this.tempLaunchId, {});
-    promiseErrorHandler(finishLaunchPromise);
-    await finishLaunchPromise;
-    this.baseReporter.epilogue.call(this.baseReporter);
+  private async onRunnerEnd() {
+    log.trace(`Runner end`);
+    try {
+      const finishPromise = await this.client.getPromiseFinishAllItems(this.tempLaunchId);
+      log.trace(`Runner end sync ${this.isSynchronised}`);
+      return finishPromise;
+    } catch (e) {
+      log.error("An error occurs on finish test items");
+      log.error(e);
+    } finally {
+      this.isSynchronised = true;
+    }
   }
 
-  public runnerCommand(command: any) {
-    if (!this.options.enableSeleniumCommandReporting || this.isMultiremote) {
+  private onBeforeCommand(command: any) {
+    if (!this.options.reportSeleniumCommands || this.isMultiremote) {
       return;
     }
 
-    const parent = this.storage.get(command.cid);
-    if (!parent) {
-      return;
-    }
-
-    const method = `${command.method} ${command.uri.path}`;
-    if (!isEmpty(command.data)) {
-      const data = JSON.stringify(limit(command.data));
-      this.sendLog({ cid: command.cid, level: this.options.seleniumCommandsLogLevel, message: `${method}\n${data}` });
+    const method = `${command.method} ${command.endpoint}`;
+    if (!isEmpty(command.body)) {
+      const data = JSON.stringify(limit(command.body));
+      this.sendLog({message: `${method} ${data}`, level: this.options.seleniumCommandsLogLevel});
     } else {
-      this.sendLog({ cid: command.cid, level: this.options.seleniumCommandsLogLevel, message: `${method}` });
+      this.sendLog({message: `${method}`, level: this.options.seleniumCommandsLogLevel});
     }
   }
 
-  public runnerResult(command: any) {
+  private onAfterCommand(command: any) {
     if (this.isMultiremote) {
       return;
     }
-
-    const parent = this.storage.get(command.cid);
-    if (!parent) {
-      return;
-    }
-
-    const isScreenshot = command.requestOptions.uri.path.match(/\/session\/[^/]*\/screenshot/) && command.body.value;
-
+    const isScreenshot = isScreenshotCommand(command) && command.result.value;
+    const {autoAttachScreenshots, screenshotsLogLevel, seleniumCommandsLogLevel, reportSeleniumCommands} = this.options;
     if (isScreenshot) {
-      if (this.options.enableScreenshotsReporting) {
+      if (autoAttachScreenshots) {
         const obj = {
-          cid: command.cid,
-          content: command.body.value,
-          level: this.options.screenshotsLogLevel,
+          content: command.result.value,
+          level: screenshotsLogLevel,
           name: "screenshot.png",
         };
         this.sendFile(obj);
       }
     }
 
-    if (this.options.enableSeleniumCommandReporting) {
-      if (command.body && !isEmpty(command.body.value)) {
-        const method = `${command.requestOptions.uri.path}`;
-        delete command.body.sessionId;
-        const data = JSON.stringify(limit(command.body));
-        this.sendLog({ cid: command.cid, level: this.options.seleniumCommandsLogLevel, message: `${method}\n${data}` });
+    if (reportSeleniumCommands) {
+      if (command.body && !isEmpty(command.result.value)) {
+        delete command.result.sessionId;
+        const data = JSON.stringify(limit(command.result));
+        this.sendLog({message: `${data}`, level: seleniumCommandsLogLevel});
       }
     }
   }
 
-  public runnerEnd(runner: any) {
-    const clear = (cid: string) => {
-      this.storage.clearStartedTests(cid);
-    };
-    setTimeout(clear.bind(this), 5000, runner.cid);
+  private onHookStart(hook: any) {
+    log.trace(`Start hook ${hook.title} ${hook.uid}`);
   }
 
-  public async sendLogToTest({ cid, test, level, message }) {
-    const testObj = this.storage.getStartedTests(cid).reverse().find((startedTest) => {
+  private onHookEnd(hook: any) {
+    log.trace(`End hook ${hook.title} ${hook.uid} ${JSON.stringify(hook)}`);
+    if (hook.error) {
+      const testItem = this.storage.getCurrentTest();
+      if (testItem === null) {
+        this.onTestStart(hook, TYPE.BEFORE_METHOD);
+      }
+      this.testFinished(hook, STATUS.FAILED);
+    }
+  }
+
+  private sendLog(event: any) {
+    const testItem = this.storage.getCurrentTest();
+    if (testItem === null) {
+      log.warn("Cannot send log message. There is no running tests");
+      return;
+    }
+
+    const {promise} = this.client.sendLog(testItem.id, {
+      level: event.level,
+      message: String(event.message),
+    });
+    promiseErrorHandler(promise);
+  }
+
+  private sendFile({level, name, content, type = "image/png"}) {
+    const testItem = this.storage.getCurrentTest();
+    if (!testItem) {
+      log.warn(`Can not send file to test. There is no running tests`);
+      return;
+    }
+
+    const {promise} = this.client.sendLog(testItem.id, {level}, {name, content, type});
+    promiseErrorHandler(promise);
+  }
+
+  private async sendLogToTest({test, level, message}) {
+    const testObj = this.storage.getStartedTests().reverse().find((startedTest) => {
       return startedTest.wdioEntity.title === test.title;
     });
 
     if (!testObj) {
-      this.logger.warn(`Can not send log to test ${test.title}`);
+      log.warn(`Can not send log to test ${test.title}`);
       return;
     }
     const rs = await testObj.promise;
@@ -295,17 +276,17 @@ class ReportPortalReporter extends EventEmitter {
       time: this.now(),
     };
 
-    const url = [ReportPortalReporter.client.baseURL, "log"].join("/");
-    const promise = ReportPortalReporter.client.helpers.getServerResult(url, saveLogRQ, { headers: ReportPortalReporter.client.headers }, "POST");
+    const url = [this.client.baseURL, "log"].join("/");
+    const promise = this.client.helpers.getServerResult(url, saveLogRQ, {headers: this.client.headers}, "POST");
     promiseErrorHandler(promise);
   }
 
-  public async sendFileToTest({ cid, test, level, name, content, type = "image/png" }) {
-    const testObj = this.storage.getStartedTests(cid).reverse().find((startedTest) => {
+  private async sendFileToTest({test, level, name, content, type = "image/png"}) {
+    const testObj = this.storage.getStartedTests().reverse().find((startedTest) => {
       return startedTest.wdioEntity.title === test.title;
     });
     if (!testObj) {
-      this.logger.warn(`Can not send file to test ${test.title}`);
+      log.warn(`Can not send file to test ${test.title}`);
       return;
     }
     const rs = await testObj.promise;
@@ -318,38 +299,24 @@ class ReportPortalReporter extends EventEmitter {
     };
     // to avoid https://github.com/BorisOsipov/wdio-reportportal-reporter/issues/42#issuecomment-456573592
     const fileName = createHash("md5").update(name).digest("hex");
-    const promise = ReportPortalReporter.client.getRequestLogWithFile(saveLogRQ, { name: fileName, content, type });
+    const promise = this.client.getRequestLogWithFile(saveLogRQ, {name: fileName, content, type});
     promiseErrorHandler(promise);
   }
 
-  public sendLog({ cid, level, message }) {
-    const parent = this.storage.get(cid);
-    if (!parent) {
-      this.logger.warn(`Can not send log to test. There is no running tests`);
-      return;
-    }
-    const { promise } = ReportPortalReporter.client.sendLog(parent.id, {
-      level,
-      message: String(message),
-    });
-    promiseErrorHandler(promise);
-  }
-
-  public sendFile({ cid, level, name, content, type = "image/png" }) {
-    const parent = this.storage.get(cid);
-    if (!parent) {
-      this.logger.warn(`Can not send file to test. There is no running tests`);
-      return;
-    }
-
-    const { promise } = ReportPortalReporter.client.sendLog(parent.id, { level }, { name, content, type });
-    promiseErrorHandler(promise);
+  private registerListeners() {
+    // @ts-ignore
+    process.on(EVENTS.RP_LOG, this.sendLog.bind(this));
+    // @ts-ignore
+    process.on(EVENTS.RP_FILE, this.sendFile.bind(this));
+    // @ts-ignore
+    process.on(EVENTS.RP_TEST_LOG, this.sendLogToTest.bind(this));
+    // @ts-ignore
+    process.on(EVENTS.RP_TEST_FILE, this.sendFileToTest.bind(this));
   }
 
   private now() {
-    return ReportPortalReporter.client.helpers.now();
+    return this.client.helpers.now();
   }
-
 }
 
 export = ReportPortalReporter;

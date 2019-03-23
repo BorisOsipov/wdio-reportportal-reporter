@@ -1,15 +1,27 @@
-import {BaseReporter, getOptions, RPClient} from "./reportportal-client.mock";
+import {getOptions, RPClient} from "./reportportal-client.mock";
 
-const Reporter = require("../../build/reporter");
+const Reporter = require("../reporter");
 
-describe("finishLaunch", () => {
-  test("should finishLaunch", () => {
-    const reporter = new Reporter(new BaseReporter(), {}, getOptions());
-    Reporter.client = new RPClient();
+describe("onRunnerEnd", () => {
+  test("should wait all promises", async () => {
+    const reporter = new Reporter(getOptions());
+    reporter.client = new RPClient();
     reporter.tempLaunchId = "foo";
-    reporter.end({});
+    await reporter.onRunnerEnd();
 
-    expect(Reporter.client.finishLaunch).toBeCalledTimes(1);
-    expect(Reporter.client.finishLaunch).toBeCalledWith(reporter.tempLaunchId, {});
+    expect(reporter.client.getPromiseFinishAllItems).toBeCalledTimes(1);
+    expect(reporter.client.getPromiseFinishAllItems).toBeCalledWith(reporter.tempLaunchId);
+    expect(reporter.isSynchronised).toBeTruthy();
+  });
+
+  test("should handle errors", async () => {
+    const reporter = new Reporter(getOptions());
+    reporter.client = new RPClient();
+    reporter.client.getPromiseFinishAllItems = jest.fn().mockReturnValue(Promise.reject("fail"));
+    await reporter.onRunnerEnd();
+
+    expect(reporter.client.getPromiseFinishAllItems).toBeCalledTimes(1);
+    expect(reporter.client.getPromiseFinishAllItems).toBeCalledWith(reporter.tempLaunchId);
+    expect(reporter.rpPromisesCompleted).toBeTruthy();
   });
 });

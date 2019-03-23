@@ -1,15 +1,14 @@
 {
   "name": "wdio-reportportal-reporter",
-  "version": "0.0.23",
-  "description": "A WebdriverIO plugin. Report results to Report Portal.",
+  "version": "5.0.0",
+  "description": "A WebdriverIO v5 plugin. Report results to Report Portal.",
   "main": "build/reporter.js",
   "scripts": {
     "build": "run-s clean compile",
     "clean": "rimraf ./build ./coverage",
     "compile": "node ./node_modules/typescript/lib/tsc.js",
     "lint": "tslint -c tslint.json 'lib/**/*.{ts,tsx}'",
-    "test": "run-s lint test:unit",
-    "test:integration": "mocha",
+    "test": "run-s lint compile test:unit",
     "test:unit": "jest"
   },
   "repository": {
@@ -35,23 +34,19 @@
   "homepage": "https://github.com/borisosipov/wdio-reportportal-reporter#readme",
   "dependencies": {
     "json-stringify-safe": "~5.0.1",
-    "reportportal-client": "https://github.com/reportportal/client-javascript.git#b09e49b"
+    "validator": "^10.11.0",
+    "@wdio/reporter": "^5.7.2",
+    "@wdio/logger": "^5.7.0",
+    "reportportal-js-client": "^1.0.1",
+    "wdio-reportportal-service": "^5.0.0"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.0",
-    "jest": "^24.1.0",
+    "@types/jest": "^24.0.9",
+    "@types/node": "^11.9.4",
+    "jest": "^23.6.0",
     "ts-jest": "^23.10.5",
-    "@types/chai": "^4.1.7",
-    "@types/cucumber": "^4.0.4",
-    "@types/mocha": "5.2.6",
-    "@types/webdriverio": "4.13.3",
-    "chai": "^4.1.2",
-    "mocha": "^5.2.0",
     "npm-run-all": "~4.1.5",
     "rimraf": "^2.6.3",
-    "wdio-cucumber-framework": "^2.2.8",
-    "wdio-mocha-framework": "^0.6.3",
-    "webdriverio": "4.14.2",
     "ts-node": "^8.0.2",
     "tslint": "^5.11.0",
     "typescript": "^3.3.3"

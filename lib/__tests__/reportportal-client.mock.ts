@@ -31,6 +31,8 @@ export class RPClient {
       tempId: "sendLog",
   });
 
+  public getPromiseFinishAllItems = jest.fn().mockReturnValue(Promise.resolve("ok"));
+
   public getRequestLogWithFile = jest.fn().mockReturnValue(new Promise(() => {}));
 
   constructor(config?) {
@@ -43,14 +45,6 @@ export class RPClient {
     this.headers = {
         foo: "bar",
     };
-  }
-}
-
-export class BaseReporter {
-  public epilogue = jest.fn();
-  public props: any;
-  constructor(props?) {
-    this.props = props;
   }
 }
 

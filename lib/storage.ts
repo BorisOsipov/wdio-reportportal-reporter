@@ -1,52 +1,42 @@
-import {TYPE} from "./constants";
 import {StorageEntity} from "./entities";
 
 export class Storage {
-  private parents = new Map<string, StorageEntity[]>();
-  private startedTests = new Map<string, StorageEntity[]>();
+  private testItems = new Map<string, StorageEntity>();
+  private allTestItems = new Array<StorageEntity>();
+  private suites = new Array<StorageEntity>();
 
-  public get(cid: string): StorageEntity | null {
-    const parents = this.getParentIds(cid);
-    if (!parents.length) {
+  public getCurrentSuite() {
+    const currentSuite = this.suites[this.suites.length - 1];
+    return currentSuite ? currentSuite : null;
+  }
+
+  public getCurrentTest() {
+    const activeTests = Array.from(this.testItems.values());
+    if (activeTests.length === 0) {
       return null;
     }
-    return parents[parents.length - 1];
+    return activeTests[activeTests.length - 1];
   }
 
-  public add(cid: string, value: StorageEntity) {
-    const parents = this.getParentIds(cid);
-    parents.push(value);
-
-    if (value.type  === TYPE.SUITE) {
-      if (!this.startedTests[value.wdioEntity.cid]) {
-        this.startedTests[value.wdioEntity.cid] = [];
-      }
-    }
-    if (value.type  === TYPE.STEP) {
-      this.startedTests[value.wdioEntity.cid].push(value);
-    }
+  public addSuite(value: StorageEntity) {
+    this.suites.push(value);
   }
 
-  public clear(cid: string) {
-    const parents = this.getParentIds(cid);
-    parents.pop();
+  public removeSuite() {
+    this.suites.pop();
   }
 
-  public getStartedTests(cid: string): StorageEntity[] {
-    const tests = this.startedTests[cid] || [];
+  public addTest(uid: string, value: StorageEntity) {
+    this.testItems.set(uid, value);
+    this.allTestItems.push(value);
+  }
+
+  public removeTest(item: StorageEntity) {
+    return this.testItems.delete(item.wdioEntity.uid);
+  }
+
+  public getStartedTests(): StorageEntity[] {
+    const tests = this.allTestItems || [];
     return tests.slice();
-  }
-
-  public clearStartedTests(cid: string): void {
-    delete this.startedTests[cid];
-  }
-
-  private getParentIds(cid: string) {
-    if (this.parents.has(cid)) {
-      return this.parents.get(cid);
-    }
-
-    this.parents.set(cid, []);
-    return this.parents.get(cid);
   }
 }

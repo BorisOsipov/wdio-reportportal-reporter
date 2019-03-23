@@ -7,7 +7,7 @@
     "inlineSources": false,
     "noImplicitReturns": true,
     "noImplicitAny": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
   "include": ["lib/"],
   "exclude": [
