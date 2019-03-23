@@ -12,7 +12,7 @@ The easiest way is to keep `wdio-reportportal-reporter` as a devDependency in yo
 ```json
 {
   "devDependencies": {
-    "wdio-reportportal-reporter": "~0.0.23",
+    "wdio-reportportal-reporter": "~0.0.24",
     "wdio-reportportal-service": "~0.0.1"
   }
 }
