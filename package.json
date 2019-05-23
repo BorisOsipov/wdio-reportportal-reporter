@@ -34,7 +34,7 @@
   "homepage": "https://github.com/borisosipov/wdio-reportportal-reporter#readme",
   "dependencies": {
     "json-stringify-safe": "~5.0.1",
-    "validator": "^10.11.0",
+    "validator": "^11.0.0",
     "@wdio/reporter": "^5.7.8",
     "@wdio/logger": "^5.8.0",
     "reportportal-js-client": "^1.0.1"
