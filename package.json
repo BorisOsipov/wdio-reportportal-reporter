@@ -34,21 +34,21 @@
   "homepage": "https://github.com/borisosipov/wdio-reportportal-reporter#readme",
   "dependencies": {
     "json-stringify-safe": "~5.0.1",
-    "validator": "^10.11.0",
-    "@wdio/reporter": "^5.7.8",
-    "@wdio/logger": "^5.8.0",
-    "reportportal-js-client": "^1.0.1"
+    "validator": "^11.0.0",
+    "@wdio/reporter": "^5.9.3",
+    "@wdio/logger": "^5.9.3",
+    "reportportal-js-client": "^1.0.2"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.9",
-    "@types/node": "^11.9.4",
-    "jest": "^23.6.0",
-    "ts-jest": "^23.10.5",
-    "npm-run-all": "~4.1.5",
+    "@types/jest": "^24.0.13",
+    "@types/node": "^12.0.4",
+    "jest": "^24.8.0",
+    "ts-jest": "^24.0.2",
+    "npm-run-all": "^4.1.5",
     "rimraf": "^2.6.3",
-    "ts-node": "^8.0.2",
-    "tslint": "^5.11.0",
-    "typescript": "^3.3.3"
+    "ts-node": "^8.2.0",
+    "tslint": "^5.17.0",
+    "typescript": "^3.5.1"
   },
   "contributors": [
     "Boris Osipov <osipov.boris@gmail.com>"
