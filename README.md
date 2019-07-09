@@ -12,7 +12,7 @@ The easiest way is to keep `wdio-reportportal-reporter` and `wdio-reportportal-s
 {
   "devDependencies": {
     "wdio-reportportal-reporter": "5.0.1",
-    "wdio-reportportal-service": "5.0.1"
+    "wdio-reportportal-service": "5.0.2"
   }
 }
 ```
