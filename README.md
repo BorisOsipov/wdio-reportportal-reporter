@@ -109,7 +109,7 @@ exports.config = {
         failureObject.title = step.keyword + step.text;
         const screenShot = global.browser.takeScreenshot();
         let attachment = Buffer.from(screenShot, 'base64');
-        reportportal.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
+        reporter.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
     }
   }
 ...
