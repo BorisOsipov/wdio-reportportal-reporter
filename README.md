@@ -96,6 +96,26 @@ exports.config = {
 ...
 ```
 
+Cucumber example:
+```js
+const reporter = require('wdio-reportportal-reporter');
+
+exports.config = {
+...
+   afterStep: function (uri, feature, scenario, step, result) {
+     if (result.status === 'failed') {
+        let failureObject = {};
+        failureObject.type = 'afterStep';
+        failureObject.title = step.keyword + step.text;
+        const screenShot = global.browser.takeScreenshot();
+        let attachment = Buffer.from(screenShot, 'base64');
+        reportportal.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
+    }
+  }
+...
+}
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/BorisOsipov/wdio-reportportal-reporter/blob/master/LICENSE) file for details
