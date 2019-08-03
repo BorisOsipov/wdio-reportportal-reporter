@@ -45,6 +45,7 @@ class ReportPortalReporter extends Reporter {
   private isMultiremote: boolean;
   private sanitizedCapabilities: string;
   private rpPromisesCompleted = false;
+  private specFile: string;
 
   constructor(options: any) {
     super(Object.assign({stdout: true}, options));
@@ -86,6 +87,7 @@ class ReportPortalReporter extends Reporter {
     }
     const suite = this.storage.getCurrentSuite();
     const testStartObj = new StartTestItem(test.title, type);
+    testStartObj.codeRef = this.specFile;
     if (this.options.parseTagsFromTestTitle) {
       testStartObj.addTagsToTest();
     }
@@ -154,6 +156,7 @@ class ReportPortalReporter extends Reporter {
     this.sanitizedCapabilities = runner.sanitizedCapabilities;
     this.client = client || new ReportPortalClient(this.options.reportPortalClientConfig);
     this.launchId = process.env.RP_LAUNCH_ID;
+    this.specFile = runner.specs[0];
     const startLaunchObj = {
       description: this.options.reportPortalClientConfig.description,
       id: this.launchId,
@@ -270,6 +273,7 @@ class ReportPortalReporter extends Reporter {
     const rs = await testObj.promise;
 
     const saveLogRQ = {
+      itemId: rs.uuid,
       item_id: rs.id,
       level,
       message,
@@ -292,6 +296,7 @@ class ReportPortalReporter extends Reporter {
     const rs = await testObj.promise;
 
     const saveLogRQ = {
+      itemId: rs.uuid,
       item_id: rs.id,
       level,
       message: "",
