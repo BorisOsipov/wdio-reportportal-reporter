@@ -3,6 +3,7 @@ import {getOptions, RPClient} from "./reportportal-client.mock";
 
 const Reporter = require("../../build/reporter");
 const REAL_LAUNCH_ID = "FOO_ID";
+const runnerStat = {specs: ["foo"]};
 
 describe("startLaunch", () => {
   afterEach(() => {
@@ -15,7 +16,7 @@ describe("startLaunch", () => {
     const client = new RPClient();
     process.env.RP_LAUNCH_ID = REAL_LAUNCH_ID;
 
-    reporter.onRunnerStart({}, client);
+    reporter.onRunnerStart(runnerStat, client);
 
     expect(reporter.tempLaunchId).toEqual("startLaunch");
     expect(reporter.launchId).toEqual(REAL_LAUNCH_ID);
@@ -39,7 +40,7 @@ describe("startLaunch", () => {
     const client = new RPClient();
     process.env.RP_LAUNCH_ID = REAL_LAUNCH_ID;
 
-    reporter.onRunnerStart({}, client);
+    reporter.onRunnerStart(runnerStat, client);
 
     expect(reporter.tempLaunchId).toEqual("startLaunch");
     expect(reporter.launchId).toEqual(REAL_LAUNCH_ID);
