@@ -49,6 +49,9 @@ exports.config = {
 };
 ```
 
+# Complete guide with a project sample demonstrating integration of WebdriverIO with Report Portal
+See readme in [wdio-rp-integration-demoC](https://github.com/iAutomator/wdio-rp-integration-demo)
+
 # Additional API
 
 Api methods can be accessed using:
