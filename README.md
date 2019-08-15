@@ -86,6 +86,8 @@ Methods `sendLogToTest`\\`sendFileToTest` are useful when you need to send scree
 Mocha example:
 ```js
 const reporter = require('wdio-reportportal-reporter');
+const path = require('path');
+const fs = require('fs');
 
 exports.config = {
 ...
