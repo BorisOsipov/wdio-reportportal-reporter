@@ -60,6 +60,9 @@ class ReportPortalReporter extends Reporter {
     if (suiteItem !== null) {
       parentId = suiteItem.id;
     }
+    if (this.options.parseTagsFromTestTitle) {
+      suiteStartObj.addTags();
+    }
     suiteStartObj.description = this.sanitizedCapabilities;
     const {tempId, promise} = this.client.startTestItem(
       suiteStartObj,
@@ -87,7 +90,7 @@ class ReportPortalReporter extends Reporter {
     const suite = this.storage.getCurrentSuite();
     const testStartObj = new StartTestItem(test.title, type);
     if (this.options.parseTagsFromTestTitle) {
-      testStartObj.addTagsToTest();
+      testStartObj.addTags();
     }
     addBrowserParam(this.sanitizedCapabilities, testStartObj);
 

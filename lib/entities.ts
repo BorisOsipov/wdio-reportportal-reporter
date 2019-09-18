@@ -16,7 +16,7 @@ export class StartTestItem {
     }
   }
 
-  public addTagsToTest() {
+  public addTags() {
     const tags = parseTags(this.name);
     if (tags.length > 0) {
       this.tags = tags;
