@@ -122,7 +122,7 @@ exports.config = {
 }
 ```
 
-WDIO V5 Cucumber example:
+WDIO V5 Cucumber "5.14.3+" Example:
 ```js
 const reporter = require('wdio-reportportal-reporter');
 
