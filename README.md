@@ -2,7 +2,8 @@ WDIO Report Portal Reporter
 ====================
 [![Greenkeeper badge](https://badges.greenkeeper.io/BorisOsipov/wdio-reportportal-reporter.svg)](https://greenkeeper.io/)
 [![Build Status](https://travis-ci.org/BorisOsipov/wdio-reportportal-reporter.svg?branch=master)](https://travis-ci.org/BorisOsipov/wdio-reportportal-reporter)
-
+![npm](https://img.shields.io/npm/v/wdio-reportportal-reporter)
+![npm](https://img.shields.io/npm/dm/wdio-reportportal-reporter)
 > A WebdriverIO v5 reporter plugin to report results to Report Portal(http://reportportal.io/).
 > For v4 version see [this branch](https://github.com/BorisOsipov/wdio-reportportal-reporter/tree/wdio_v4#wdio-report-portal-reporter)
 
@@ -11,8 +12,8 @@ The easiest way is to keep `wdio-reportportal-reporter` and `wdio-reportportal-s
 ```json
 {
   "devDependencies": {
-    "wdio-reportportal-reporter": "5.0.0",
-    "wdio-reportportal-service": "5.0.0"
+    "wdio-reportportal-reporter": "5.0.1",
+    "wdio-reportportal-service": "5.0.2"
   }
 }
 ```
@@ -49,6 +50,9 @@ exports.config = {
 };
 ```
 
+# Complete guide with a project sample demonstrating integration of WebdriverIO with Report Portal
+See readme in [wdio-rp-integration-demoC](https://github.com/iAutomator/wdio-rp-integration-demo)
+
 # Additional API
 
 Api methods can be accessed using:
@@ -82,6 +86,8 @@ Methods `sendLogToTest`\\`sendFileToTest` are useful when you need to send scree
 Mocha example:
 ```js
 const reporter = require('wdio-reportportal-reporter');
+const path = require('path');
+const fs = require('fs');
 
 exports.config = {
 ...
@@ -96,6 +102,26 @@ exports.config = {
 ...
 ```
 
+Cucumber example:
+```js
+const reporter = require('wdio-reportportal-reporter');
+
+exports.config = {
+...
+   afterStep: function (uri, feature, scenario, step, result) {
+     if (result.status === 'failed') {
+        let failureObject = {};
+        failureObject.type = 'afterStep';
+        failureObject.title = step.keyword + step.text;
+        const screenShot = global.browser.takeScreenshot();
+        let attachment = Buffer.from(screenShot, 'base64');
+        reporter.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
+    }
+  }
+...
+}
+```
+
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/BorisOsipov/wdio-reportportal-reporter/blob/master/LICENSE) file for details

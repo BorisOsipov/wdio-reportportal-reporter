@@ -6,7 +6,9 @@ export class StartTestItem {
   public description;
   public parameters?: any[];
   public tags?: any[];
+  public attributes?: any[];
   public type: TYPE;
+  public codeRef: string;
 
   constructor(name: string, type: TYPE) {
     this.name = name;
@@ -20,6 +22,7 @@ export class StartTestItem {
     const tags = parseTags(this.name);
     if (tags.length > 0) {
       this.tags = tags;
+      this.attributes = tags.map((value) => ({value}));
     }
   }
 }
@@ -40,10 +43,12 @@ export class EndTestItem {
 export class Issue {
   // tslint:disable-next-line
   public issue_type: string;
+  private issueType: string;
 
   // tslint:disable-next-line
   constructor(issue_type: string) {
     this.issue_type = issue_type;
+    this.issueType = issue_type;
   }
 }
 

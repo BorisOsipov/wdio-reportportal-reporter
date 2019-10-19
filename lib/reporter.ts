@@ -1,6 +1,7 @@
 import logger from "@wdio/logger";
 import Reporter from "@wdio/reporter";
 import {createHash} from "crypto";
+import * as path from "path";
 import * as ReportPortalClient from "reportportal-js-client";
 import {EVENTS, LEVEL, STATUS, TYPE} from "./constants";
 import {EndTestItem, Issue, StartTestItem, StorageEntity} from "./entities";
@@ -45,6 +46,7 @@ class ReportPortalReporter extends Reporter {
   private isMultiremote: boolean;
   private sanitizedCapabilities: string;
   private rpPromisesCompleted = false;
+  private specFile: string;
 
   constructor(options: any) {
     super(Object.assign({stdout: true}, options));
@@ -89,6 +91,7 @@ class ReportPortalReporter extends Reporter {
     }
     const suite = this.storage.getCurrentSuite();
     const testStartObj = new StartTestItem(test.title, type);
+    testStartObj.codeRef = this.specFile;
     if (this.options.parseTagsFromTestTitle) {
       testStartObj.addTags();
     }
@@ -157,6 +160,7 @@ class ReportPortalReporter extends Reporter {
     this.sanitizedCapabilities = runner.sanitizedCapabilities;
     this.client = client || new ReportPortalClient(this.options.reportPortalClientConfig);
     this.launchId = process.env.RP_LAUNCH_ID;
+    this.specFile = runner.specs[0];
     const startLaunchObj = {
       description: this.options.reportPortalClientConfig.description,
       id: this.launchId,
@@ -273,6 +277,7 @@ class ReportPortalReporter extends Reporter {
     const rs = await testObj.promise;
 
     const saveLogRQ = {
+      itemId: rs.uuid,
       item_id: rs.id,
       level,
       message,
@@ -295,6 +300,7 @@ class ReportPortalReporter extends Reporter {
     const rs = await testObj.promise;
 
     const saveLogRQ = {
+      itemId: rs.uuid,
       item_id: rs.id,
       level,
       message: "",
@@ -302,7 +308,8 @@ class ReportPortalReporter extends Reporter {
     };
     // to avoid https://github.com/BorisOsipov/wdio-reportportal-reporter/issues/42#issuecomment-456573592
     const fileName = createHash("md5").update(name).digest("hex");
-    const promise = this.client.getRequestLogWithFile(saveLogRQ, {name: fileName, content, type});
+    const extension = path.extname(name) || ".dat";
+    const promise = this.client.getRequestLogWithFile(saveLogRQ, {name: `${fileName}${extension}`, content, type});
     promiseErrorHandler(promise);
   }
 
