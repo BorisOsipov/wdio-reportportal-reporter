@@ -62,6 +62,9 @@ class ReportPortalReporter extends Reporter {
     if (suiteItem !== null) {
       parentId = suiteItem.id;
     }
+    if (this.options.parseTagsFromTestTitle) {
+      suiteStartObj.addTags();
+    }
     suiteStartObj.description = this.sanitizedCapabilities;
     const {tempId, promise} = this.client.startTestItem(
       suiteStartObj,
@@ -90,7 +93,7 @@ class ReportPortalReporter extends Reporter {
     const testStartObj = new StartTestItem(test.title, type);
     testStartObj.codeRef = this.specFile;
     if (this.options.parseTagsFromTestTitle) {
-      testStartObj.addTagsToTest();
+      testStartObj.addTags();
     }
     addBrowserParam(this.sanitizedCapabilities, testStartObj);
 
@@ -151,6 +154,7 @@ class ReportPortalReporter extends Reporter {
     this.storage.removeTest(testItem);
   }
 
+  // @ts-ignore
   private onRunnerStart(runner: any, client: ReportPortalClient) {
     log.trace(`Runner start`);
     this.isMultiremote = runner.isMultiremote;
@@ -181,7 +185,7 @@ class ReportPortalReporter extends Reporter {
       this.isSynchronised = true;
     }
   }
-
+  // @ts-ignore
   private onBeforeCommand(command: any) {
     if (!this.options.reportSeleniumCommands || this.isMultiremote) {
       return;
@@ -195,7 +199,7 @@ class ReportPortalReporter extends Reporter {
       this.sendLog({message: `${method}`, level: this.options.seleniumCommandsLogLevel});
     }
   }
-
+  // @ts-ignore
   private onAfterCommand(command: any) {
     if (this.isMultiremote) {
       return;
