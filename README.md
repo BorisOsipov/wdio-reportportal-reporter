@@ -102,7 +102,7 @@ exports.config = {
 ...
 ```
 
-Cucumber example:
+WDIO V4 Cucumber example:
 ```js
 const reporter = require('wdio-reportportal-reporter');
 
@@ -113,6 +113,27 @@ exports.config = {
         let failureObject = {};
         failureObject.type = 'afterStep';
         failureObject.title = step.keyword + step.text;
+        const screenShot = global.browser.takeScreenshot();
+        let attachment = Buffer.from(screenShot, 'base64');
+        reporter.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
+    }
+  }
+...
+}
+```
+
+WDIO V5 Cucumber "5.14.3+" Example:
+```js
+const reporter = require('wdio-reportportal-reporter');
+
+exports.config = {
+...
+   afterStep: function (uri, feature, { error, result, duration, passed }, stepData, context) {
+     if (result.status === 'failed') {
+        let failureObject = {};
+        failureObject.type = 'afterStep';
+        failureObject.error = error;
+        failureObject.title = `${stepData.step.keyword}${stepData.step.text}`;
         const screenShot = global.browser.takeScreenshot();
         let attachment = Buffer.from(screenShot, 'base64');
         reporter.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
