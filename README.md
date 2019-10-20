@@ -102,7 +102,7 @@ exports.config = {
 ...
 ```
 
-WDIO V5 Cucumber "5.14.3+" Example:
+WDIO Cucumber "5.14.3+" Example:
 ```js
 const reporter = require('wdio-reportportal-reporter');
 
@@ -151,8 +151,8 @@ const RpService = require("wdio-reportportal-service");
 
 ## Reporting test to existing launch
 
-If you want report test to existing active launch you may pass it to reporter by environment variable `REPORT_PORTAL_LAUNCH_ID`
-You responsible for finishing launch as well as start such launch.
+If you want report test to existing active launch you may pass it to reporter by environment variable `REPORT_PORTAL_LAUNCH_ID`  
+You are responsible for finishing launch as well as starting such launch.
 
 ```sh
 $ export REPORT_PORTAL_LAUNCH_ID=SomeLaunchId
