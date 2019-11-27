@@ -35,20 +35,20 @@
   "dependencies": {
     "json-stringify-safe": "~5.0.1",
     "validator": "^12.0.0",
-    "@wdio/reporter": "^5.14.5",
-    "@wdio/logger": "^5.9.3",
+    "@wdio/reporter": "^5.15.2",
+    "@wdio/logger": "^5.16.10",
     "reportportal-js-client": "^1.2.0"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.19",
-    "@types/node": "^12.0.12",
-    "jest": "^24.8.0",
-    "ts-jest": "^24.0.2",
+    "@types/jest": "^24.0.23",
+    "@types/node": "^12.12.14",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.2.0",
     "npm-run-all": "^4.1.5",
     "rimraf": "^3.0.0",
-    "ts-node": "^8.3.0",
-    "tslint": "^5.17.0",
-    "typescript": "^3.5.3"
+    "ts-node": "^8.5.2",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.2"
   },
   "contributors": [
     "Boris Osipov <osipov.boris@gmail.com>"
