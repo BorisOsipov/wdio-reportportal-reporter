@@ -3,6 +3,7 @@ export enum EVENTS {
   RP_FILE = "rp:file",
   RP_TEST_LOG = "rp:failedLog",
   RP_TEST_FILE = "rp:failedFile",
+  RP_TEST_RETRY = "rp:testRetry",
 }
 
 export enum STATUS {
