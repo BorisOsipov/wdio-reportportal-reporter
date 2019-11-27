@@ -9,6 +9,7 @@ export class StartTestItem {
   public attributes?: any[];
   public type: TYPE;
   public codeRef: string;
+  public retry = false;
 
   constructor(name: string, type: TYPE) {
     this.name = name;
