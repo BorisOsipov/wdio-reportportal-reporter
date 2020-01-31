@@ -12,8 +12,8 @@ The easiest way is to keep `wdio-reportportal-reporter` and `wdio-reportportal-s
 ```json
 {
   "devDependencies": {
-    "wdio-reportportal-reporter": "5.2.3",
-    "wdio-reportportal-service": "5.2.3"
+    "wdio-reportportal-reporter": "5.2.4",
+    "wdio-reportportal-service": "5.2.4"
   }
 }
 ```
@@ -34,6 +34,7 @@ const conf = {
     debug: false,
     description: "Launch description text",
     tags: ["tags", "for", "launch"],
+    headers: {"foo": "bar"} // optional
   },
   reportSeleniumCommands: false,
   autoAttachScreenshots: false,
@@ -151,7 +152,7 @@ const RpService = require("wdio-reportportal-service");
 
 ## Reporting test to existing launch
 
-If you want report test to existing active launch you may pass it to reporter by environment variable `REPORT_PORTAL_LAUNCH_ID`  
+If you want report test to existing active launch you may pass it to reporter by environment variable `REPORT_PORTAL_LAUNCH_ID`
 You are responsible for finishing launch as well as starting such launch.
 
 ```sh
