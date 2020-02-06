@@ -40,7 +40,7 @@
     "reportportal-js-client": "^1.2.2"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.23",
+    "@types/jest": "^25.1.2",
     "@types/node": "^13.1.0",
     "jest": "^24.9.0",
     "ts-jest": "^25.1.0",
