@@ -1,6 +1,7 @@
 import logger from "@wdio/logger";
 import Reporter from "@wdio/reporter";
 import {createHash} from "crypto";
+import * as path from "path";
 import * as ReportPortalClient from "reportportal-js-client";
 import {EVENTS, LEVEL, STATUS, TYPE} from "./constants";
 import {EndTestItem, Issue, StartTestItem, StorageEntity} from "./entities";
@@ -36,6 +37,10 @@ class ReportPortalReporter extends Reporter {
     sendToReporter(EVENTS.RP_TEST_FILE, {test, level, name, content, type});
   }
 
+  public static finishTestManually(test: any) {
+    sendToReporter(EVENTS.RP_TEST_RETRY, {test});
+  }
+
   private static reporterName = "reportportal";
   private launchId: string;
   private client: ReportPortalClient;
@@ -60,6 +65,9 @@ class ReportPortalReporter extends Reporter {
     let parentId = null;
     if (suiteItem !== null) {
       parentId = suiteItem.id;
+    }
+    if (this.options.parseTagsFromTestTitle) {
+      suiteStartObj.addTags();
     }
     suiteStartObj.description = this.sanitizedCapabilities;
     const {tempId, promise} = this.client.startTestItem(
@@ -89,7 +97,10 @@ class ReportPortalReporter extends Reporter {
     const testStartObj = new StartTestItem(test.title, type);
     testStartObj.codeRef = this.specFile;
     if (this.options.parseTagsFromTestTitle) {
-      testStartObj.addTagsToTest();
+      testStartObj.addTags();
+    }
+    if (this.options.setRetryTrue) {
+      testStartObj.retry = true;
     }
     addBrowserParam(this.sanitizedCapabilities, testStartObj);
 
@@ -150,6 +161,7 @@ class ReportPortalReporter extends Reporter {
     this.storage.removeTest(testItem);
   }
 
+  // @ts-ignore
   private onRunnerStart(runner: any, client: ReportPortalClient) {
     log.trace(`Runner start`);
     this.isMultiremote = runner.isMultiremote;
@@ -180,7 +192,7 @@ class ReportPortalReporter extends Reporter {
       this.isSynchronised = true;
     }
   }
-
+  // @ts-ignore
   private onBeforeCommand(command: any) {
     if (!this.options.reportSeleniumCommands || this.isMultiremote) {
       return;
@@ -194,7 +206,7 @@ class ReportPortalReporter extends Reporter {
       this.sendLog({message: `${method}`, level: this.options.seleniumCommandsLogLevel});
     }
   }
-
+  // @ts-ignore
   private onAfterCommand(command: any) {
     if (this.isMultiremote) {
       return;
@@ -234,6 +246,22 @@ class ReportPortalReporter extends Reporter {
       }
       this.testFinished(hook, STATUS.FAILED);
     }
+  }
+
+  private finishTestManually(event: any) {
+    const testItem = this.storage.getCurrentTest();
+    if (testItem === null) {
+      return;
+    }
+    const err = {
+      stack: event.test.error,
+    };
+    const test = {
+      error: err,
+      title: testItem.wdioEntity.title,
+      uid: testItem.wdioEntity.uid,
+    };
+    this.testFinished(test, STATUS.FAILED);
   }
 
   private sendLog(event: any) {
@@ -304,7 +332,8 @@ class ReportPortalReporter extends Reporter {
     };
     // to avoid https://github.com/BorisOsipov/wdio-reportportal-reporter/issues/42#issuecomment-456573592
     const fileName = createHash("md5").update(name).digest("hex");
-    const promise = this.client.getRequestLogWithFile(saveLogRQ, {name: fileName, content, type});
+    const extension = path.extname(name) || ".dat";
+    const promise = this.client.getRequestLogWithFile(saveLogRQ, {name: `${fileName}${extension}`, content, type});
     promiseErrorHandler(promise);
   }
 
@@ -317,6 +346,8 @@ class ReportPortalReporter extends Reporter {
     process.on(EVENTS.RP_TEST_LOG, this.sendLogToTest.bind(this));
     // @ts-ignore
     process.on(EVENTS.RP_TEST_FILE, this.sendFileToTest.bind(this));
+    // @ts-ignore
+    process.on(EVENTS.RP_TEST_RETRY, this.finishTestManually.bind(this));
   }
 
   private now() {

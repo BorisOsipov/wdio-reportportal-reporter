@@ -18,7 +18,7 @@ describe("startSuite", () => {
 
     expect(reporter.client.startTestItem).toBeCalledTimes(1);
     expect(reporter.client.startTestItem).toBeCalledWith(
-      {name: "foo", type: TYPE.SUITE},
+      {name: "foo", type: TYPE.SUITE, retry: false},
       reporter.tempLaunchId,
       null,
     );
@@ -29,7 +29,7 @@ describe("startSuite", () => {
 
     expect(reporter.client.startTestItem).toBeCalledTimes(1);
     expect(reporter.client.startTestItem).toBeCalledWith(
-      {name: "foo", type: TYPE.SUITE},
+      {description: undefined, name: "foo", type: TYPE.SUITE, retry: false},
       reporter.tempLaunchId,
       null,
     );
@@ -42,7 +42,7 @@ describe("startSuite", () => {
     expect(reporter.client.startTestItem).toBeCalledTimes(2);
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       1,
-      {name: "foo", type: TYPE.SUITE},
+      {name: "foo", type: TYPE.SUITE, retry: false},
       reporter.tempLaunchId,
       null,
     );
@@ -50,7 +50,7 @@ describe("startSuite", () => {
     const {id} = reporter.storage.getCurrentSuite();
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       2,
-      {name: "foo", type: TYPE.SUITE},
+      {name: "foo", type: TYPE.SUITE, retry: false},
       reporter.tempLaunchId,
       id,
     );

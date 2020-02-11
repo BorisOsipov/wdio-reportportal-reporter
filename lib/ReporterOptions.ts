@@ -7,5 +7,6 @@ export default class ReporterOptions {
   public reportSeleniumCommands = false;
   public seleniumCommandsLogLevel = LEVEL.DEBUG;
   public parseTagsFromTestTitle = false;
+  public setRetryTrue = false;
   public reportPortalClientConfig = {mode: MODE.DEFAULT, tags: [], description: ""};
 }

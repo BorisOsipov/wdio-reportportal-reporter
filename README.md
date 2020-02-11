@@ -12,8 +12,8 @@ The easiest way is to keep `wdio-reportportal-reporter` and `wdio-reportportal-s
 ```json
 {
   "devDependencies": {
-    "wdio-reportportal-reporter": "5.0.1",
-    "wdio-reportportal-service": "5.0.2"
+    "wdio-reportportal-reporter": "5.2.4",
+    "wdio-reportportal-service": "5.2.4"
   }
 }
 ```
@@ -34,6 +34,7 @@ const conf = {
     debug: false,
     description: "Launch description text",
     tags: ["tags", "for", "launch"],
+    headers: {"foo": "bar"} // optional
   },
   reportSeleniumCommands: false,
   autoAttachScreenshots: false,
@@ -102,17 +103,18 @@ exports.config = {
 ...
 ```
 
-Cucumber example:
+WDIO Cucumber "5.14.3+" Example:
 ```js
 const reporter = require('wdio-reportportal-reporter');
 
 exports.config = {
 ...
-   afterStep: function (uri, feature, scenario, step, result) {
-     if (result.status === 'failed') {
+   afterStep: function (uri, feature, { error, result, duration, passed }, stepData, context) {
+     if (!passed) {
         let failureObject = {};
         failureObject.type = 'afterStep';
-        failureObject.title = step.keyword + step.text;
+        failureObject.error = error;
+        failureObject.title = `${stepData.step.keyword}${stepData.step.text}`;
         const screenShot = global.browser.takeScreenshot();
         let attachment = Buffer.from(screenShot, 'base64');
         reporter.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
@@ -120,6 +122,42 @@ exports.config = {
   }
 ...
 }
+```
+
+## Getting link to Report Portal UI launch page
+```js
+const RpService = require("wdio-reportportal-service");
+...
+    onComplete: async function (_, config) {
+        const link = await RpService.getLaunchUrl(config);
+        console.log(`Report portal link ${link}`)
+    }
+...
+```
+or more complicated way
+
+```js
+const RpService = require("wdio-reportportal-service");
+...
+    onComplete: async function (_, config) {
+        const rpVersion = 5; // or 4 for Report Portal v4
+        const protocol = 'http:';
+        const hostname = 'example.com';
+        const port = ':8080'; // or empty string for default 80/443 ports
+        const link = await RpService.getLaunchUrlByParams(rpVersion, protocol, hostname, port, config);
+        console.log(`Report portal link ${link}`)
+    }
+...
+```
+
+## Reporting test to existing launch
+
+If you want report test to existing active launch you may pass it to reporter by environment variable `REPORT_PORTAL_LAUNCH_ID`
+You are responsible for finishing launch as well as starting such launch.
+
+```sh
+$ export REPORT_PORTAL_LAUNCH_ID=SomeLaunchId
+$ npm run wdio
 ```
 
 ## License
