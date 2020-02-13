@@ -3,7 +3,7 @@ import Reporter from "@wdio/reporter";
 import {createHash} from "crypto";
 import * as path from "path";
 import * as ReportPortalClient from "reportportal-js-client";
-import {EVENTS, LEVEL, STATUS, TYPE, CUCUMBER_TYPE, CUCUMBER_STATUS} from "./constants";
+import {CUCUMBER_STATUS, CUCUMBER_TYPE, EVENTS, LEVEL, STATUS, TYPE} from "./constants";
 import {EndTestItem, Issue, StartTestItem, StorageEntity} from "./entities";
 import ReporterOptions from "./ReporterOptions";
 import {Storage} from "./storage";
@@ -72,16 +72,16 @@ class ReportPortalReporter extends Reporter {
       new StartTestItem(suite.title, TYPE.SUITE);
 
     if (this.options.cucumberNestedSteps && this.options.autoAttachCucumberFeatureToScenario) {
-      switch(suite.type) {
+      switch (suite.type) {
         case CUCUMBER_TYPE.FEATURE:
-          this.featureName = suite.title
+          this.featureName = suite.title;
           break;
         case CUCUMBER_TYPE.SCENARIO:
           suiteStartObj.attributes = [
             {
               key: CUCUMBER_TYPE.FEATURE,
-              value: this.featureName
-            }
+              value: this.featureName,
+            },
           ];
           break;
       }
@@ -110,7 +110,7 @@ class ReportPortalReporter extends Reporter {
 
     let status = STATUS.PASSED;
     if (this.options.cucumberNestedSteps) {
-      switch(suite.type) {
+      switch (suite.type) {
         case CUCUMBER_TYPE.SCENARIO:
           const scenarioStatus = suite.tests.every(({ state }) => state === CUCUMBER_STATUS.PASSED);
           status = scenarioStatus ? STATUS.PASSED : STATUS.FAILED;

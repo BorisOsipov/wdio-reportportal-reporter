@@ -44,12 +44,12 @@ export enum TYPE {
 
 export enum CUCUMBER_TYPE {
   FEATURE = "feature",
-  SCENARIO = "scenario"
+  SCENARIO = "scenario",
 }
 
 export enum CUCUMBER_STATUS {
   PASSED = "passed",
-  FAILED = "failed"
+  FAILED = "failed",
 }
 
 export enum MODE {
