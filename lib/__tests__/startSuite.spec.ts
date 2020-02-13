@@ -1,4 +1,4 @@
-import {CUCUMBER_TYPE, STATUS, TYPE} from "../constants";
+import {CUCUMBER_TYPE, TYPE} from "../constants";
 import {suiteStartEvent} from "./fixtures/events";
 import {getOptions, RPClient} from "./reportportal-client.mock";
 
