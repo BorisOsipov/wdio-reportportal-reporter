@@ -52,6 +52,7 @@ class ReportPortalReporter extends Reporter {
   private rpPromisesCompleted = false;
   private specFile: string;
   private featureStatus: STATUS;
+  private featureName: string;
 
   constructor(options: any) {
     super(Object.assign({stdout: true}, options));
@@ -69,6 +70,22 @@ class ReportPortalReporter extends Reporter {
     const suiteStartObj = this.options.cucumberNestedSteps ?
       new StartTestItem(suite.title, suite.type === CUCUMBER_TYPE.FEATURE ? TYPE.TEST : TYPE.STEP) :
       new StartTestItem(suite.title, TYPE.SUITE);
+
+    if (this.options.cucumberNestedSteps && this.options.autoAttachCucumberFeatureToScenario) {
+      switch(suite.type) {
+        case CUCUMBER_TYPE.FEATURE:
+          this.featureName = suite.title
+          break;
+        case CUCUMBER_TYPE.SCENARIO:
+          suiteStartObj.attributes = [
+            {
+              key: CUCUMBER_TYPE.FEATURE,
+              value: this.featureName
+            }
+          ];
+          break;
+      }
+    }
 
     const suiteItem = this.storage.getCurrentSuite();
     let parentId = null;
