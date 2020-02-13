@@ -10,6 +10,7 @@ export class StartTestItem {
   public type: TYPE;
   public codeRef: string;
   public retry = false;
+  public hasStats: boolean;
 
   constructor(name: string, type: TYPE) {
     this.name = name;
