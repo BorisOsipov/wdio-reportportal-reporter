@@ -86,7 +86,7 @@ Methods `sendLogToTest`\\`sendFileToTest` are useful when you need to send scree
 
 Mocha example:
 ```js
-const reporter = require('wdio-reportportal-reporter');
+const reportportal = require('wdio-reportportal-reporter');
 const path = require('path');
 const fs = require('fs');
 
@@ -97,7 +97,7 @@ exports.config = {
       const filename = "screnshot.png";
       const outputFile = path.join(__dirname, filename);
       browser.saveScreenshot(outputFile);
-      reporter.sendFileToTest(test, 'info', filename, fs.readFileSync(outputFile));
+      reportportal.sendFileToTest(test, 'info', filename, fs.readFileSync(outputFile));
     }
   }
 ...
@@ -105,7 +105,7 @@ exports.config = {
 
 WDIO Cucumber "5.14.3+" Example:
 ```js
-const reporter = require('wdio-reportportal-reporter');
+const reportportal = require('wdio-reportportal-reporter');
 
 exports.config = {
 ...
@@ -117,7 +117,7 @@ exports.config = {
         failureObject.title = `${stepData.step.keyword}${stepData.step.text}`;
         const screenShot = global.browser.takeScreenshot();
         let attachment = Buffer.from(screenShot, 'base64');
-        reporter.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
+        reportportal.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
     }
   }
 ...
