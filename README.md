@@ -41,6 +41,8 @@ const conf = {
   seleniumCommandsLogLevel: 'debug',
   screenshotsLogLevel: 'info',
   parseTagsFromTestTitle: false,
+  cucumberNestedSteps: false,
+  autoAttachCucumberFeatureToScenario: false // requires cucumberNestedSteps to be true for use
 };
 
 exports.config = {
