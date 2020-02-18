@@ -8,5 +8,7 @@ export default class ReporterOptions {
   public seleniumCommandsLogLevel = LEVEL.DEBUG;
   public parseTagsFromTestTitle = false;
   public setRetryTrue = false;
+  public cucumberNestedSteps = false;
+  public autoAttachCucumberFeatureToScenario = false;
   public reportPortalClientConfig = {mode: MODE.DEFAULT, tags: [], description: ""};
 }

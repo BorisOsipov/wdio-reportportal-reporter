@@ -29,3 +29,6 @@ node_modules
 
 # JetBrains IDE
 .idea
+
+# VS Code IDE
+.vscode

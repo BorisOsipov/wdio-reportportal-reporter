@@ -3,7 +3,7 @@ import Reporter from "@wdio/reporter";
 import {createHash} from "crypto";
 import * as path from "path";
 import * as ReportPortalClient from "reportportal-js-client";
-import {EVENTS, LEVEL, STATUS, TYPE} from "./constants";
+import {CUCUMBER_STATUS, CUCUMBER_TYPE, EVENTS, LEVEL, STATUS, TYPE} from "./constants";
 import {EndTestItem, Issue, StartTestItem, StorageEntity} from "./entities";
 import ReporterOptions from "./ReporterOptions";
 import {Storage} from "./storage";
@@ -51,16 +51,42 @@ class ReportPortalReporter extends Reporter {
   private sanitizedCapabilities: string;
   private rpPromisesCompleted = false;
   private specFile: string;
+  private featureStatus: STATUS;
+  private featureName: string;
 
   constructor(options: any) {
     super(Object.assign({stdout: true}, options));
     this.options = Object.assign(new ReporterOptions(), options);
     this.registerListeners();
+
+    if (this.options.cucumberNestedSteps) {
+      this.featureStatus = STATUS.PASSED;
+    }
   }
 
   private onSuiteStart(suite: any) {
     log.trace(`Start suite ${suite.title} ${suite.uid}`);
-    const suiteStartObj = new StartTestItem(suite.title, TYPE.SUITE);
+
+    const suiteStartObj = this.options.cucumberNestedSteps ?
+      new StartTestItem(suite.title, suite.type === CUCUMBER_TYPE.FEATURE ? TYPE.TEST : TYPE.STEP) :
+      new StartTestItem(suite.title, TYPE.SUITE);
+
+    if (this.options.cucumberNestedSteps && this.options.autoAttachCucumberFeatureToScenario) {
+      switch (suite.type) {
+        case CUCUMBER_TYPE.FEATURE:
+          this.featureName = suite.title;
+          break;
+        case CUCUMBER_TYPE.SCENARIO:
+          suiteStartObj.attributes = [
+            {
+              key: CUCUMBER_TYPE.FEATURE,
+              value: this.featureName,
+            },
+          ];
+          break;
+      }
+    }
+
     const suiteItem = this.storage.getCurrentSuite();
     let parentId = null;
     if (suiteItem !== null) {
@@ -81,8 +107,23 @@ class ReportPortalReporter extends Reporter {
 
   private onSuiteEnd(suite: any) {
     log.trace(`End suite ${suite.title} ${suite.uid}`);
+
+    let status = STATUS.PASSED;
+    if (this.options.cucumberNestedSteps) {
+      switch (suite.type) {
+        case CUCUMBER_TYPE.SCENARIO:
+          const scenarioStatus = suite.tests.every(({ state }) => state === CUCUMBER_STATUS.PASSED);
+          status = scenarioStatus ? STATUS.PASSED : STATUS.FAILED;
+          this.featureStatus = this.featureStatus === STATUS.PASSED && status === STATUS.PASSED ? STATUS.PASSED : STATUS.FAILED;
+          break;
+        case CUCUMBER_TYPE.FEATURE:
+          status = this.featureStatus;
+          break;
+      }
+    }
+
     const suiteItem = this.storage.getCurrentSuite();
-    const finishSuiteObj = {status: STATUS.PASSED};
+    const finishSuiteObj = {status};
     const {promise} = this.client.finishTestItem(suiteItem.id, finishSuiteObj);
     promiseErrorHandler(promise);
     this.storage.removeSuite();
@@ -96,6 +137,10 @@ class ReportPortalReporter extends Reporter {
     const suite = this.storage.getCurrentSuite();
     const testStartObj = new StartTestItem(test.title, type);
     testStartObj.codeRef = this.specFile;
+
+    if (this.options.cucumberNestedSteps) {
+      testStartObj.hasStats = false;
+    }
     if (this.options.parseTagsFromTestTitle) {
       testStartObj.addTags();
     }

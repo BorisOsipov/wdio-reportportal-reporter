@@ -42,6 +42,16 @@ export enum TYPE {
   AFTER_TEST = "AFTER_TEST",
 }
 
+export enum CUCUMBER_TYPE {
+  FEATURE = "feature",
+  SCENARIO = "scenario",
+}
+
+export enum CUCUMBER_STATUS {
+  PASSED = "passed",
+  FAILED = "failed",
+}
+
 export enum MODE {
   DEFAULT = "DEFAULT",
   DEBUG = "DEBUG",
