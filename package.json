@@ -1,6 +1,6 @@
 {
   "name": "wdio-reportportal-reporter",
-  "version": "5.2.4",
+  "version": "5.2.5",
   "description": "A WebdriverIO v5 plugin. Report results to Report Portal.",
   "main": "build/reporter.js",
   "scripts": {
