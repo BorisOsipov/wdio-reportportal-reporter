@@ -21,19 +21,19 @@ class ReportPortalReporter extends Reporter {
     this.rpPromisesCompleted = value;
   }
 
-  public static sendLog(level: LEVEL, message: any) {
+  public static sendLog(level: LEVEL | keyof typeof LEVEL, message: any) {
     sendToReporter(EVENTS.RP_LOG, {level, message});
   }
 
-  public static sendFile(level: LEVEL, name: string, content: any, type = "image/png") {
+  public static sendFile(level: LEVEL | keyof typeof LEVEL, name: string, content: any, type = "image/png") {
     sendToReporter(EVENTS.RP_FILE, {level, name, content, type});
   }
 
-  public static sendLogToTest(test: any, level: LEVEL, message: any) {
+  public static sendLogToTest(test: any, level: LEVEL | keyof typeof LEVEL, message: any) {
     sendToReporter(EVENTS.RP_TEST_LOG, {test, level, message});
   }
 
-  public static sendFileToTest(test: any, level: LEVEL, name: string, content: any, type = "image/png") {
+  public static sendFileToTest(test: any, level: LEVEL | keyof typeof LEVEL, name: string, content: any, type = "image/png") {
     sendToReporter(EVENTS.RP_TEST_FILE, {test, level, name, content, type});
   }
 
