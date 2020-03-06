@@ -8,6 +8,7 @@
     "noImplicitReturns": true,
     "noImplicitAny": false,
     "skipLibCheck": true,
+    "declaration": true
   },
   "include": ["lib/"],
   "exclude": [
