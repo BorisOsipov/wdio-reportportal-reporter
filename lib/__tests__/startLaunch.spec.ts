@@ -1,5 +1,6 @@
 import {MODE} from "../constants";
 import {getOptions, RPClient} from "./reportportal-client.mock";
+import {Attribute} from "../../build/ReporterOptions";
 
 const Reporter = require("../../build/reporter");
 const REAL_LAUNCH_ID = "FOO_ID";
@@ -26,7 +27,7 @@ describe("startLaunch", () => {
       description: options.reportPortalClientConfig.description,
       id: REAL_LAUNCH_ID,
       mode: options.reportPortalClientConfig.mode,
-      tags: options.reportPortalClientConfig.tags,
+      attributes: options.reportPortalClientConfig.attributes,
     };
     expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
   });
@@ -34,7 +35,8 @@ describe("startLaunch", () => {
   test("should startLaunch with custom parameters", () => {
     const options = getOptions();
     options.reportPortalClientConfig.mode = MODE.DEBUG;
-    options.reportPortalClientConfig.tags = ["foo"];
+    // @ts-ignore
+    options.reportPortalClientConfig.attributes = [new Attribute("foo", "bar")];
     options.reportPortalClientConfig.description = "bar";
     const reporter = new Reporter(options);
     const client = new RPClient();
@@ -50,7 +52,7 @@ describe("startLaunch", () => {
       description: options.reportPortalClientConfig.description,
       id: REAL_LAUNCH_ID,
       mode: options.reportPortalClientConfig.mode,
-      tags: options.reportPortalClientConfig.tags,
+      attributes: options.reportPortalClientConfig.attributes,
     };
     expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
   });

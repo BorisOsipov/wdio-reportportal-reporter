@@ -1,5 +1,15 @@
 import {LEVEL, MODE} from "./constants";
 
+export class Attribute {
+  public key?: string;
+  public value?: string;
+
+  constructor(key?: string, value?: string) {
+    this.key = key;
+    this.value = value;
+  }
+}
+
 export default class ReporterOptions {
   public debug = false;
   public autoAttachScreenshots = false;
@@ -10,5 +20,5 @@ export default class ReporterOptions {
   public setRetryTrue = false;
   public cucumberNestedSteps = false;
   public autoAttachCucumberFeatureToScenario = false;
-  public reportPortalClientConfig = {mode: MODE.DEFAULT, tags: [], description: ""};
+  public reportPortalClientConfig = {mode: MODE.DEFAULT, attributes: [Attribute], description: ""};
 }

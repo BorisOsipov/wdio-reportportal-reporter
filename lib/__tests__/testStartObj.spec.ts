@@ -12,7 +12,7 @@ describe("StartTestItem", () => {
     expect(testStartObj.name).toEqual("foo");
     expect(testStartObj.type).toEqual(TYPE.STEP);
     expect(testStartObj.parameters).toBeUndefined();
-    expect(testStartObj.tags).toBeUndefined();
+    expect(testStartObj.attributes).toEqual([]);
   });
 
   test("should trim long names", () => {
