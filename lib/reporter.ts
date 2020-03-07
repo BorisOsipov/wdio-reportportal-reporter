@@ -49,6 +49,7 @@ class ReportPortalReporter extends Reporter {
   private readonly options: ReporterOptions;
   private isMultiremote: boolean;
   private sanitizedCapabilities: string;
+  private sessionId: string;
   private rpPromisesCompleted = false;
   private specFile: string;
   private featureStatus: STATUS;
@@ -144,6 +145,9 @@ class ReportPortalReporter extends Reporter {
     if (this.options.parseTagsFromTestTitle) {
       testStartObj.addTags();
     }
+    if (this.options.isSauseLabRun) {
+      testStartObj.addSauseLabId(this.sessionId);
+    }
     if (this.options.setRetryTrue) {
       testStartObj.retry = true;
     }
@@ -211,14 +215,15 @@ class ReportPortalReporter extends Reporter {
     log.trace(`Runner start`);
     this.isMultiremote = runner.isMultiremote;
     this.sanitizedCapabilities = runner.sanitizedCapabilities;
+    this.sessionId = runner.sessionId;
     this.client = client || new ReportPortalClient(this.options.reportPortalClientConfig);
     this.launchId = process.env.RP_LAUNCH_ID;
     this.specFile = runner.specs[0];
     const startLaunchObj = {
+      attributes: this.options.reportPortalClientConfig.attributes,
       description: this.options.reportPortalClientConfig.description,
       id: this.launchId,
       mode: this.options.reportPortalClientConfig.mode,
-      attributes: this.options.reportPortalClientConfig.attributes,
     };
     const {tempId} = this.client.startLaunch(startLaunchObj);
     this.tempLaunchId = tempId;
