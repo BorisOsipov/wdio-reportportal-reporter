@@ -226,7 +226,7 @@ class ReportPortalReporter extends Reporter {
       description: this.options.reportPortalClientConfig.description,
       id: this.launchId,
       mode: this.options.reportPortalClientConfig.mode,
-      tags: this.options.reportPortalClientConfig.tags,
+      attributes: this.options.reportPortalClientConfig.attributes,
     };
     const {tempId} = this.client.startLaunch(startLaunchObj);
     this.tempLaunchId = tempId;
@@ -354,8 +354,8 @@ class ReportPortalReporter extends Reporter {
     const rs = await testObj.promise;
 
     const saveLogRQ = {
-      itemId: rs.uuid,
-      item_id: rs.id,
+      itemUuid: rs.id,
+      launchUuid: this.launchId,
       level,
       message,
       time: this.now(),
@@ -377,8 +377,8 @@ class ReportPortalReporter extends Reporter {
     const rs = await testObj.promise;
 
     const saveLogRQ = {
-      itemId: rs.uuid,
-      item_id: rs.id,
+      itemUuid: rs.id,
+      launchUuid: this.launchId,
       level,
       message: "",
       time: this.now(),

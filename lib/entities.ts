@@ -1,12 +1,12 @@
 import {STATUS, TYPE} from "./constants";
 import {parseTags} from "./utils";
+import {Attribute} from "./ReporterOptions";
 
 export class StartTestItem {
   public name = "";
   public description;
   public parameters?: any[];
-  public tags?: any[];
-  public attributes?: any[];
+  public attributes = [];
   public type: TYPE;
   public codeRef: string;
   public retry = false;
@@ -23,8 +23,8 @@ export class StartTestItem {
   public addTags() {
     const tags = parseTags(this.name);
     if (tags.length > 0) {
-      this.tags = tags;
-      this.attributes = tags.map((value) => ({value}));
+      const attrs = tags.map((value) => (new Attribute(undefined, value)));
+      this.attributes.push(...attrs);
     }
   }
 }
@@ -43,14 +43,10 @@ export class EndTestItem {
 }
 
 export class Issue {
-  // tslint:disable-next-line
-  public issue_type: string;
   private issueType: string;
 
-  // tslint:disable-next-line
-  constructor(issue_type: string) {
-    this.issue_type = issue_type;
-    this.issueType = issue_type;
+  constructor(issueType: string) {
+    this.issueType = issueType;
   }
 }
 
