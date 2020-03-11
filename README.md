@@ -6,14 +6,15 @@ WDIO Report Portal Reporter
 ![npm](https://img.shields.io/npm/dm/wdio-reportportal-reporter)
 > A WebdriverIO v5 reporter plugin to report results to Report Portal(http://reportportal.io/).
 > For v4 version see [this branch](https://github.com/BorisOsipov/wdio-reportportal-reporter/tree/wdio_v4#wdio-report-portal-reporter)
+> For Report Portal v4 use `5.X.X` releases
 
 ## Installation
 The easiest way is to keep `wdio-reportportal-reporter` and `wdio-reportportal-service` as a devDependency in your `package.json`.
 ```json
 {
   "devDependencies": {
-    "wdio-reportportal-reporter": "5.2.4",
-    "wdio-reportportal-service": "5.2.4"
+    "wdio-reportportal-reporter": "6.0.0",
+    "wdio-reportportal-service": "6.0.0"
   }
 }
 ```
@@ -25,7 +26,7 @@ const reportportal = require('wdio-reportportal-reporter');
 const RpService = require("wdio-reportportal-service");
 
 const conf = {
-  reportPortalClientConfig: {
+  reportPortalClientConfig: { // report portal settings
     token: '00000000-0000-0000-0000-00000000000',
     endpoint: 'https://reportportal-url/api/v1',
     launch: 'launch_name',
@@ -33,15 +34,15 @@ const conf = {
     mode: 'DEFAULT',
     debug: false,
     description: "Launch description text",
-    tags: ["tags", "for", "launch"],
-    headers: {"foo": "bar"} // optional
+    attributes: [{key:"tag", value: "foo"}],
+    headers: {"foo": "bar"} // optional headers for internal http client
   },
-  reportSeleniumCommands: false,
-  autoAttachScreenshots: false,
-  seleniumCommandsLogLevel: 'debug',
-  screenshotsLogLevel: 'info',
-  parseTagsFromTestTitle: false,
-  cucumberNestedSteps: false,
+  reportSeleniumCommands: false, // add selenium commands to log
+  seleniumCommandsLogLevel: 'debug', // log level for selenium commands
+  autoAttachScreenshots: false, // automatically add screenshots
+  screenshotsLogLevel: 'info', // log level for screenshots
+  parseTagsFromTestTitle: false, // parse strings like `@foo` from titles and add to Report Portal
+  cucumberNestedSteps: false, // report cucumber steps as Report Portal steps
   autoAttachCucumberFeatureToScenario: false // requires cucumberNestedSteps to be true for use
 };
 
@@ -142,11 +143,10 @@ or more complicated way
 const RpService = require("wdio-reportportal-service");
 ...
     onComplete: async function (_, config) {
-        const rpVersion = 5; // or 4 for Report Portal v4
         const protocol = 'http:';
         const hostname = 'example.com';
         const port = ':8080'; // or empty string for default 80/443 ports
-        const link = await RpService.getLaunchUrlByParams(rpVersion, protocol, hostname, port, config);
+        const link = await RpService.getLaunchUrlByParams(protocol, hostname, port, config);
         console.log(`Report portal link ${link}`)
     }
 ...
