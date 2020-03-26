@@ -36,7 +36,7 @@
     "json-stringify-safe": "~5.0.1",
     "validator": "^12.0.0",
     "@wdio/reporter": "^5.18.6",
-    "@wdio/logger": "^5.16.10",
+    "@wdio/logger": "^6.0.1",
     "reportportal-js-client": "^2.0.0"
   },
   "devDependencies": {
