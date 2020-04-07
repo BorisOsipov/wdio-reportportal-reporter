@@ -4,17 +4,21 @@ WDIO Report Portal Reporter
 [![Build Status](https://travis-ci.org/BorisOsipov/wdio-reportportal-reporter.svg?branch=master)](https://travis-ci.org/BorisOsipov/wdio-reportportal-reporter)
 ![npm](https://img.shields.io/npm/v/wdio-reportportal-reporter)
 ![npm](https://img.shields.io/npm/dm/wdio-reportportal-reporter)
-> A WebdriverIO v5 reporter plugin to report results to Report Portal(http://reportportal.io/).
-> For v4 version see [this branch](https://github.com/BorisOsipov/wdio-reportportal-reporter/tree/wdio_v4#wdio-report-portal-reporter)
-> For Report Portal v4 use `5.X.X` releases
+> A WebdriverIO reporter plugin to report results to Report Portal(http://reportportal.io/).
+
+## Compatibility matrix
+|Report Portal\WebdriverIO | 4.x  |5.x  | 6.x|
+|:---:|:---:|  :---:| :---:|
+| 4.x | v.0.0.24 | v.5.* LTS | not supported |
+| 5.x | v.0.0.24 | v.6.* LTS | v.7.*  |
 
 ## Installation
 The easiest way is to keep `wdio-reportportal-reporter` and `wdio-reportportal-service` as a devDependency in your `package.json`.
 ```json
 {
   "devDependencies": {
-    "wdio-reportportal-reporter": "6.0.0",
-    "wdio-reportportal-service": "6.0.0"
+    "wdio-reportportal-reporter": "7.0.0",
+    "wdio-reportportal-service": "7.0.0"
   }
 }
 ```
@@ -95,8 +99,8 @@ const fs = require('fs');
 
 exports.config = {
 ...
-  afterTest(test) {
-    if (test.passed === false) {
+  afterTest: function (test, context, { passed }){
+    if (passed === false) {
       const filename = "screnshot.png";
       const outputFile = path.join(__dirname, filename);
       browser.saveScreenshot(outputFile);
