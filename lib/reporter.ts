@@ -83,6 +83,7 @@ class ReportPortalReporter extends Reporter {
               value: this.featureName,
             },
           ];
+          console.log(`Scenario Title: ${suite.title}`);
           break;
       }
     }
@@ -192,20 +193,21 @@ class ReportPortalReporter extends Reporter {
 
     const finishTestObj = new EndTestItem(status, issue);
     if (status === STATUS.FAILED) {
-      const message = `${test.error.stack} `;
+      let message = `${test.error.stack}`;
+
+      if (this.options.cucumberNestedSteps) {
+        const suiteItem = this.storage.getCurrentSuite();
+        message = `${message}
+        Scenario: ${suiteItem.wdioEntity.title}
+        Step: ${test.title}
+        `;
+      }
+
       finishTestObj.description = `❌ ${message}`;
       this.client.sendLog(testItem.id, {
         level: LEVEL.ERROR,
         message,
       });
-
-      if (this.options.cucumberNestedSteps) {
-        const suiteItem = this.storage.getCurrentSuite();
-        this.client.sendLog(suiteItem.id, {
-          level: LEVEL.ERROR,
-          message,
-        });
-      }
     }
 
     const {promise} = this.client.finishTestItem(testItem.id, finishTestObj);
