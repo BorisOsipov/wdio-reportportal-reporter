@@ -194,15 +194,6 @@ class ReportPortalReporter extends Reporter {
     const finishTestObj = new EndTestItem(status, issue);
     if (status === STATUS.FAILED) {
       let message = `${test.error.stack}`;
-
-      if (this.options.cucumberNestedSteps) {
-        const suiteItem = this.storage.getCurrentSuite();
-        message = `${message}
-        Scenario: ${suiteItem.wdioEntity.title}
-        Step: ${test.title}
-        `;
-      }
-
       finishTestObj.description = `❌ ${message}`;
       this.client.sendLog(testItem.id, {
         level: LEVEL.ERROR,
