@@ -192,7 +192,7 @@ class ReportPortalReporter extends Reporter {
 
     const finishTestObj = new EndTestItem(status, issue);
     if (status === STATUS.FAILED) {
-      const message = `${test.error.stack}`;
+      const message = `${test.error.stack} `;
       finishTestObj.description = `❌ ${message}`;
       this.client.sendLog(testItem.id, {
         level: LEVEL.ERROR,
