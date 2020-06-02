@@ -208,16 +208,6 @@ class ReportPortalReporter extends Reporter {
         level: LEVEL.ERROR,
         message,
       });
-
-      // if (this.options.cucumberNestedSteps) {
-      //   const suiteItem = this.storage.getCurrentSuite();
-      //   const foo = `Scenario: ${suiteItem.wdioEntity.title}`; // , Step: ${test.title}, Error: ${test.error.stack}`;
-      //   console.log('Error', foo);
-      //   this.client.sendLog(suiteItem.id, {
-      //     level: LEVEL.ERROR,
-      //     foo,
-      //   });
-      // }
     }
 
     const {promise} = this.client.finishTestItem(testItem.id, finishTestObj);
