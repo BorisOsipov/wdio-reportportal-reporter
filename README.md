@@ -43,7 +43,8 @@ const conf = {
   screenshotsLogLevel: 'info', // log level for screenshots
   parseTagsFromTestTitle: false, // parse strings like `@foo` from titles and add to Report Portal
   cucumberNestedSteps: false, // report cucumber steps as Report Portal steps
-  autoAttachCucumberFeatureToScenario: false // requires cucumberNestedSteps to be true for use
+  autoAttachCucumberFeatureToScenario: false, // requires cucumberNestedSteps to be true for use
+  isSauseLabRun: false // automatically add SauseLab ID to rp tags.
 };
 
 exports.config = {
