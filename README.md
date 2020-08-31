@@ -106,6 +106,27 @@ exports.config = {
 ...
 ```
 
+Jasmine example:
+```js
+const reportportal = require('wdio-reportportal-reporter');
+const path = require('path');
+const fs = require('fs');
+
+exports.config = {
+...
+  afterTest(test) {
+    if (test.passed === false) {
+      const filename = "screnshot.png";
+      const outputFile = path.join(__dirname, filename);
+      browser.saveScreenshot(outputFile);
+      //!!
+      Object.assign(test, {title: test.description}}
+      reportportal.sendFileToTest(test, 'info', filename, fs.readFileSync(outputFile));
+    }
+  }
+...
+```
+
 WDIO Cucumber "5.14.3+" Example:
 ```js
 const reportportal = require('wdio-reportportal-reporter');
