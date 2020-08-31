@@ -227,14 +227,13 @@ class ReportPortalReporter extends Reporter {
   private async onRunnerEnd() {
     log.trace(`Runner end`);
     try {
-      const finishPromise = await this.client.getPromiseFinishAllItems(this.tempLaunchId);
-      log.trace(`Runner end sync ${this.isSynchronised}`);
-      return finishPromise;
+      return await this.client.getPromiseFinishAllItems(this.tempLaunchId);
     } catch (e) {
       log.error("An error occurs on finish test items");
       log.error(e);
     } finally {
       this.isSynchronised = true;
+      log.trace(`Runner end sync`);
     }
   }
   // @ts-ignore
