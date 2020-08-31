@@ -37,7 +37,7 @@
     "validator": "^13.1.1",
     "@wdio/reporter": "^6.3.6",
     "@wdio/logger": "^6.0.16",
-    "reportportal-js-client": "^2.0.0"
+    "reportportal-js-client": "^2.1.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.10",
