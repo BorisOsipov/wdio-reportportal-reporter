@@ -4,13 +4,13 @@ import {parseTags} from "./utils";
 
 export class StartTestItem {
   public name = "";
-  public description;
+  public description?: string;
   public parameters?: any[];
   public attributes = [];
   public type: TYPE;
-  public codeRef: string;
+  public codeRef?: string;
   public retry = false;
-  public hasStats: boolean;
+  public hasStats?: boolean;
 
   constructor(name: string, type: TYPE) {
     this.name = name;
