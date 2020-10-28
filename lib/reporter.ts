@@ -13,11 +13,11 @@ const log = logger("wdio-reportportal-reporter");
 
 class ReportPortalReporter extends Reporter {
 
-  private get isSynchronised(): boolean {
+  get isSynchronised(): boolean {
     return this.rpPromisesCompleted;
   }
 
-  private set isSynchronised(value: boolean) {
+  set isSynchronised(value) {
     this.rpPromisesCompleted = value;
   }
 
@@ -49,6 +49,7 @@ class ReportPortalReporter extends Reporter {
   private readonly options: ReporterOptions;
   private isMultiremote: boolean;
   private sanitizedCapabilities: string;
+  private sessionId: string;
   private rpPromisesCompleted = false;
   private specFile: string;
   private featureStatus: STATUS;
@@ -64,7 +65,7 @@ class ReportPortalReporter extends Reporter {
     }
   }
 
-  private onSuiteStart(suite: any) {
+  onSuiteStart(suite) {
     log.trace(`Start suite ${suite.title} ${suite.uid}`);
 
     const suiteStartObj = this.options.cucumberNestedSteps ?
@@ -105,7 +106,7 @@ class ReportPortalReporter extends Reporter {
     this.storage.addSuite(new StorageEntity(suiteStartObj.type, tempId, promise, suite));
   }
 
-  private onSuiteEnd(suite: any) {
+  onSuiteEnd(suite) {
     log.trace(`End suite ${suite.title} ${suite.uid}`);
 
     let status = STATUS.PASSED;
@@ -129,7 +130,7 @@ class ReportPortalReporter extends Reporter {
     this.storage.removeSuite();
   }
 
-  private onTestStart(test: any, type = TYPE.STEP) {
+  onTestStart(test, type = TYPE.STEP) {
     log.trace(`Start test ${test.title} ${test.uid}`);
     if (this.storage.getCurrentTest()) {
       return;
@@ -143,6 +144,9 @@ class ReportPortalReporter extends Reporter {
     }
     if (this.options.parseTagsFromTestTitle) {
       testStartObj.addTags();
+    }
+    if (this.options.isSauseLabRun) {
+      testStartObj.addSauseLabId(this.sessionId);
     }
     if (this.options.setRetryTrue) {
       testStartObj.retry = true;
@@ -160,12 +164,12 @@ class ReportPortalReporter extends Reporter {
     return promise;
   }
 
-  private onTestPass(test: any) {
+  onTestPass(test) {
     log.trace(`Pass test ${test.title} ${test.uid}`);
     this.testFinished(test, STATUS.PASSED);
   }
 
-  private onTestFail(test: any) {
+  onTestFail(test) {
     log.trace(`Fail test ${test.title} ${test.uid} ${test.error.stack}`);
     const testItem = this.storage.getCurrentTest();
     if (testItem === null) {
@@ -174,7 +178,7 @@ class ReportPortalReporter extends Reporter {
     this.testFinished(test, STATUS.FAILED);
   }
 
-  private onTestSkip(test: any) {
+  onTestSkip(test) {
     log.trace(`Skip test ${test.title} ${test.uid}`);
     const testItem = this.storage.getCurrentTest();
     if (testItem === null) {
@@ -183,7 +187,7 @@ class ReportPortalReporter extends Reporter {
     this.testFinished(test, STATUS.SKIPPED, new Issue("NOT_ISSUE"));
   }
 
-  private testFinished(test: any, status: STATUS, issue ?: Issue) {
+  testFinished(test: any, status: STATUS, issue ?: Issue) {
     log.trace(`Finish test ${test.title} ${test.uid}`);
     const testItem = this.storage.getCurrentTest();
     if (testItem === null) {
@@ -207,38 +211,38 @@ class ReportPortalReporter extends Reporter {
   }
 
   // @ts-ignore
-  private onRunnerStart(runner: any, client: ReportPortalClient) {
+  onRunnerStart(runner, client: ReportPortalClient) {
     log.trace(`Runner start`);
     this.isMultiremote = runner.isMultiremote;
     this.sanitizedCapabilities = runner.sanitizedCapabilities;
+    this.sessionId = runner.sessionId;
     this.client = client || new ReportPortalClient(this.options.reportPortalClientConfig);
     this.launchId = process.env.RP_LAUNCH_ID;
     this.specFile = runner.specs[0];
     const startLaunchObj = {
+      attributes: this.options.reportPortalClientConfig.attributes,
       description: this.options.reportPortalClientConfig.description,
       id: this.launchId,
       mode: this.options.reportPortalClientConfig.mode,
-      attributes: this.options.reportPortalClientConfig.attributes,
     };
     const {tempId} = this.client.startLaunch(startLaunchObj);
     this.tempLaunchId = tempId;
   }
 
-  private async onRunnerEnd() {
+  async onRunnerEnd() {
     log.trace(`Runner end`);
     try {
-      const finishPromise = await this.client.getPromiseFinishAllItems(this.tempLaunchId);
-      log.trace(`Runner end sync ${this.isSynchronised}`);
-      return finishPromise;
+      return await this.client.getPromiseFinishAllItems(this.tempLaunchId);
     } catch (e) {
       log.error("An error occurs on finish test items");
       log.error(e);
     } finally {
       this.isSynchronised = true;
+      log.trace(`Runner end sync`);
     }
   }
-  // @ts-ignore
-  private onBeforeCommand(command: any) {
+
+  onBeforeCommand(command) {
     if (!this.options.reportSeleniumCommands || this.isMultiremote) {
       return;
     }
@@ -251,8 +255,8 @@ class ReportPortalReporter extends Reporter {
       this.sendLog({message: `${method}`, level: this.options.seleniumCommandsLogLevel});
     }
   }
-  // @ts-ignore
-  private onAfterCommand(command: any) {
+
+  onAfterCommand(command) {
     if (this.isMultiremote) {
       return;
     }
@@ -278,11 +282,11 @@ class ReportPortalReporter extends Reporter {
     }
   }
 
-  private onHookStart(hook: any) {
+  onHookStart(hook) {
     log.trace(`Start hook ${hook.title} ${hook.uid}`);
   }
 
-  private onHookEnd(hook: any) {
+  onHookEnd(hook) {
     log.trace(`End hook ${hook.title} ${hook.uid} ${JSON.stringify(hook)}`);
     if (hook.error) {
       const testItem = this.storage.getCurrentTest();
@@ -383,15 +387,10 @@ class ReportPortalReporter extends Reporter {
   }
 
   private registerListeners() {
-    // @ts-ignore
     process.on(EVENTS.RP_LOG, this.sendLog.bind(this));
-    // @ts-ignore
     process.on(EVENTS.RP_FILE, this.sendFile.bind(this));
-    // @ts-ignore
     process.on(EVENTS.RP_TEST_LOG, this.sendLogToTest.bind(this));
-    // @ts-ignore
     process.on(EVENTS.RP_TEST_FILE, this.sendFileToTest.bind(this));
-    // @ts-ignore
     process.on(EVENTS.RP_TEST_RETRY, this.finishTestManually.bind(this));
   }
 

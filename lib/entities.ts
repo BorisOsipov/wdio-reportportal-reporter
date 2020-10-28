@@ -1,16 +1,16 @@
 import {STATUS, TYPE} from "./constants";
-import {parseTags} from "./utils";
 import {Attribute} from "./ReporterOptions";
+import {parseTags} from "./utils";
 
 export class StartTestItem {
   public name = "";
-  public description;
+  public description?: string;
   public parameters?: any[];
   public attributes = [];
   public type: TYPE;
-  public codeRef: string;
+  public codeRef?: string;
   public retry = false;
-  public hasStats: boolean;
+  public hasStats?: boolean;
 
   constructor(name: string, type: TYPE) {
     this.name = name;
@@ -25,6 +25,12 @@ export class StartTestItem {
     if (tags.length > 0) {
       const attrs = tags.map((value) => (new Attribute(undefined, value)));
       this.attributes.push(...attrs);
+    }
+  }
+
+  public addSauseLabId(id: string) {
+    if (id) {
+      this.attributes.push({key: "SLID", value: id});
     }
   }
 }

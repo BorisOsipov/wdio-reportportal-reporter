@@ -1,6 +1,6 @@
+import {Attribute} from "../../build/ReporterOptions";
 import {MODE} from "../constants";
 import {getOptions, RPClient} from "./reportportal-client.mock";
-import {Attribute} from "../../build/ReporterOptions";
 
 const Reporter = require("../../build/reporter");
 const REAL_LAUNCH_ID = "FOO_ID";
@@ -24,10 +24,10 @@ describe("startLaunch", () => {
     expect(reporter.client.startLaunch).toBeCalledTimes(1);
 
     const launchObj = {
+      attributes: options.reportPortalClientConfig.attributes,
       description: options.reportPortalClientConfig.description,
       id: REAL_LAUNCH_ID,
       mode: options.reportPortalClientConfig.mode,
-      attributes: options.reportPortalClientConfig.attributes,
     };
     expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
   });
@@ -49,10 +49,10 @@ describe("startLaunch", () => {
     expect(reporter.client.startLaunch).toBeCalledTimes(1);
 
     const launchObj = {
+      attributes: options.reportPortalClientConfig.attributes,
       description: options.reportPortalClientConfig.description,
       id: REAL_LAUNCH_ID,
       mode: options.reportPortalClientConfig.mode,
-      attributes: options.reportPortalClientConfig.attributes,
     };
     expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
   });
