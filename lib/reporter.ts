@@ -84,6 +84,10 @@ class ReportPortalReporter extends Reporter {
               value: this.featureName,
             },
           ];
+
+          if (this.options.setRetryTrue) {
+            suiteStartObj.retry = true;
+          }
           break;
       }
     }
