@@ -46,11 +46,12 @@ class ReportPortalReporter extends Reporter {
   private client: ReportPortalClient;
   private storage = new Storage();
   private tempLaunchId: string;
+  // @ts-ignore temporary until wdio typings make stable
   private readonly options: ReporterOptions;
   private isMultiremote: boolean;
   private sanitizedCapabilities: string;
   private sessionId: string;
-  private rpPromisesCompleted = false;
+  private rpPromisesCompleted = true;
   private specFile: string;
   private featureStatus: STATUS;
   private featureName: string;
@@ -217,6 +218,7 @@ class ReportPortalReporter extends Reporter {
   // @ts-ignore
   onRunnerStart(runner, client: ReportPortalClient) {
     log.trace(`Runner start`);
+    this.rpPromisesCompleted = false;
     this.isMultiremote = runner.isMultiremote;
     this.sanitizedCapabilities = runner.sanitizedCapabilities;
     this.sessionId = runner.sessionId;
