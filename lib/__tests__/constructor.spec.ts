@@ -19,9 +19,9 @@ describe("constructor", () => {
     expect(reporter.options.screenshotsLogLevel).toEqual(LEVEL.TRACE);
   });
 
-  test("should override default options", () => {
+  test("should set isSynchronised", () => {
     const options = getOptions();
     const reporter = new Reporter(options);
-    expect(reporter.isSynchronised).toEqual(false);
+    expect(reporter.isSynchronised).toEqual(true);
   });
 });
