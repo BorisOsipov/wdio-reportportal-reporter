@@ -21,6 +21,7 @@ describe("startLaunch", () => {
 
     expect(reporter.tempLaunchId).toEqual("startLaunch");
     expect(reporter.launchId).toEqual(REAL_LAUNCH_ID);
+    expect(reporter.isSynchronised).toEqual(false);
     expect(reporter.client.startLaunch).toBeCalledTimes(1);
 
     const launchObj = {
