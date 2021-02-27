@@ -13,7 +13,7 @@ The easiest way is to keep `wdio-reportportal-reporter` and `wdio-reportportal-s
 ```json
 {
   "devDependencies": {
-    "wdio-reportportal-reporter": "6.1.3",
+    "wdio-reportportal-reporter": "6.2.0",
     "wdio-reportportal-service": "6.1.1"
   }
 }
