@@ -1,17 +1,17 @@
 import {LEVEL} from "../constants";
-import {getOptions} from "./reportportal-client.mock";
+import {getDefaultOptions} from "./reportportal-client.mock";
 
 const Reporter = require("../../build/reporter");
 
 describe("constructor", () => {
   test("should store configuration data", () => {
-    const options = getOptions();
+    const options = getDefaultOptions();
     const reporter = new Reporter(options);
     expect(reporter.options).toEqual(options);
   });
 
   test("should override default options", () => {
-    const options = getOptions();
+    const options = getDefaultOptions();
     options.debug = true;
     options.screenshotsLogLevel = LEVEL.TRACE;
     const reporter = new Reporter(options);
@@ -20,7 +20,7 @@ describe("constructor", () => {
   });
 
   test("should set isSynchronised", () => {
-    const options = getOptions();
+    const options = getDefaultOptions();
     const reporter = new Reporter(options);
     expect(reporter.isSynchronised).toEqual(true);
   });

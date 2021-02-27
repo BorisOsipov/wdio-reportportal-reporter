@@ -1,6 +1,14 @@
 import {TYPE} from "../constants";
 import {StartTestItem} from "../entities";
-import {addBrowserParam, addDescription, isScreenshotCommand, parseTags, sendToReporter} from "../utils";
+import {
+  addBrowserParam,
+  addDescription,
+  addSauceLabAttributes,
+  isScreenshotCommand,
+  parseTags,
+  sendToReporter
+} from "../utils";
+import {getDefaultOptions} from "./reportportal-client.mock";
 
 let processEmit;
 
@@ -92,5 +100,58 @@ describe("#isScreenshotCommand",  () => {
     expect(isScreenshotCommand({endpoint: "/session/id/screenshot"})).toEqual(true);
     expect(isScreenshotCommand({endpoint: "/wd/hub/session/id/screenshot"})).toEqual(true);
     expect(isScreenshotCommand({endpoint: "/session/id/click"})).toEqual(false);
+  });
+});
+
+describe("#addSauceLabAttributes",  () => {
+  const sessionId = "sessionId";
+
+  test("can use old config param isSauseLabRun", () => {
+    const testItem = new StartTestItem("name", TYPE.STEP);
+    const reporterOptions = getDefaultOptions();
+    Object.assign(reporterOptions, {isSauseLabRun: true})
+
+    addSauceLabAttributes(reporterOptions, testItem, sessionId)
+
+    expect(testItem.attributes.length).toEqual(1)
+    expect(testItem.attributes).toEqual([{key: "SLID", value: sessionId}])
+  });
+
+  test("can use new config param sauceLabOptions", () => {
+    const testItem = new StartTestItem("name", TYPE.STEP);
+    const sauceLabOptions =  {
+      enabled: true
+    }
+    const reporterOptions = getDefaultOptions();
+    Object.assign(reporterOptions, {sauceLabOptions});
+
+    addSauceLabAttributes(reporterOptions, testItem, sessionId)
+
+    expect(testItem.attributes.length).toEqual(1)
+    expect(testItem.attributes).toEqual([{key: "SLID", value: sessionId}])
+  });
+
+  test("can add sldc from options", () => {
+    const testItem = new StartTestItem("name", TYPE.STEP);
+    const sauceLabOptions =  {
+      enabled: true,
+      sldc: "foo"
+    }
+    const reporterOptions = getDefaultOptions();
+    Object.assign(reporterOptions, {sauceLabOptions});
+
+    addSauceLabAttributes(reporterOptions, testItem, sessionId)
+
+    expect(testItem.attributes.length).toEqual(2)
+    expect(testItem.attributes).toEqual([{key: "SLID", value: sessionId}, {key: "SLDC", value: "foo"}])
+  });
+
+  test("should not add when options not set", () => {
+    const testItem = new StartTestItem("name", TYPE.STEP);
+    const reporterOptions = getDefaultOptions();
+
+    addSauceLabAttributes(reporterOptions, testItem, sessionId)
+
+    expect(testItem.attributes.length).toEqual(0)
   });
 });

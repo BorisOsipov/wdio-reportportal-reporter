@@ -9,6 +9,15 @@ export class Attribute {
     this.value = value;
   }
 }
+export class SauceLabOptions {
+  public enabled: boolean
+  public sldc?: string;
+
+  constructor(enabled: boolean, sldc?: string) {
+    this.enabled = enabled;
+    this.sldc = sldc;
+  }
+}
 
 export default class ReporterOptions {
   public debug = false;
@@ -19,6 +28,7 @@ export default class ReporterOptions {
   public parseTagsFromTestTitle = false;
   public setRetryTrue = false;
   public isSauseLabRun = false;
+  public sauceLabOptions?: SauceLabOptions
   public cucumberNestedSteps = false;
   public autoAttachCucumberFeatureToScenario = false;
   public reportPortalClientConfig = {mode: MODE.DEFAULT, attributes: [Attribute], description: ""};

@@ -21,15 +21,15 @@ describe("StartTestItem", () => {
     expect(new StartTestItem(getStringWithLength(255), TYPE.STEP).name.length).toEqual(255);
   });
 
-  test("should add SauseLab id", () => {
+  test("should add SauceLab id", () => {
     const testStartObj = new StartTestItem("foo", TYPE.STEP);
-    testStartObj.addSauseLabId("foo");
+    testStartObj.addSLID("foo");
     expect(testStartObj.attributes).toEqual([{key: "SLID", value: "foo"}]);
   });
 
-  test("should not add SauseLab id is empty", () => {
+  test("should add SauseLab region id", () => {
     const testStartObj = new StartTestItem("foo", TYPE.STEP);
-    testStartObj.addSauseLabId(null);
-    expect(testStartObj.attributes).toEqual([]);
+    testStartObj.addSLDC("foo");
+    expect(testStartObj.attributes).toEqual([{key: "SLDC", value: "foo"}]);
   });
 });

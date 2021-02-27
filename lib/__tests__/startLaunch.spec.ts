@@ -1,6 +1,6 @@
 import {Attribute} from "../../build/ReporterOptions";
 import {MODE} from "../constants";
-import {getOptions, RPClient} from "./reportportal-client.mock";
+import {getDefaultOptions, RPClientMock} from "./reportportal-client.mock";
 
 const Reporter = require("../../build/reporter");
 const REAL_LAUNCH_ID = "FOO_ID";
@@ -12,9 +12,9 @@ describe("startLaunch", () => {
   });
 
   test("should startLaunch with default mode", () => {
-    const options = getOptions();
+    const options = getDefaultOptions();
     const reporter = new Reporter(options);
-    const client = new RPClient();
+    const client = new RPClientMock();
     process.env.RP_LAUNCH_ID = REAL_LAUNCH_ID;
 
     reporter.onRunnerStart(runnerStat, client);
@@ -34,13 +34,13 @@ describe("startLaunch", () => {
   });
 
   test("should startLaunch with custom parameters", () => {
-    const options = getOptions();
+    const options = getDefaultOptions();
     options.reportPortalClientConfig.mode = MODE.DEBUG;
     // @ts-ignore
     options.reportPortalClientConfig.attributes = [new Attribute("foo", "bar")];
     options.reportPortalClientConfig.description = "bar";
     const reporter = new Reporter(options);
-    const client = new RPClient();
+    const client = new RPClientMock();
     process.env.RP_LAUNCH_ID = REAL_LAUNCH_ID;
 
     reporter.onRunnerStart(runnerStat, client);
