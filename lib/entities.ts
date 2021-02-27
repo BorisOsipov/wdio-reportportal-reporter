@@ -28,10 +28,12 @@ export class StartTestItem {
     }
   }
 
-  public addSauseLabId(id: string) {
-    if (id) {
-      this.attributes.push({key: "SLID", value: id});
-    }
+  public addSLID(id: string) {
+    this.attributes.push({key: "SLID", value: id});
+  }
+
+  public addSLDC(id: string) {
+    this.attributes.push({key: "SLDC", value: id});
   }
 }
 

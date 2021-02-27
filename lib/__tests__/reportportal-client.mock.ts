@@ -1,6 +1,6 @@
 import ReporterOptions from "../ReporterOptions";
 
-export class RPClient {
+export class RPClientMock {
   public config: any;
   public helpers: any;
   public headers: any;
@@ -48,6 +48,6 @@ export class RPClient {
   }
 }
 
-export const getOptions = (options?: any): ReporterOptions => {
+export const getDefaultOptions = (options?: any): ReporterOptions => {
   return Object.assign(new ReporterOptions(), options);
 };

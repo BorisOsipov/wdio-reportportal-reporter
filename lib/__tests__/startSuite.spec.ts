@@ -1,6 +1,6 @@
 import {CUCUMBER_TYPE, TYPE} from "../constants";
 import {suiteStartEvent} from "./fixtures/events";
-import {getOptions, RPClient} from "./reportportal-client.mock";
+import {getDefaultOptions, RPClientMock} from "./reportportal-client.mock";
 
 const Reporter = require("../../build/reporter");
 
@@ -8,8 +8,8 @@ describe("startSuite", () => {
   let reporter: any;
 
   beforeEach(() => {
-    reporter = new Reporter(getOptions());
-    reporter.client = new RPClient();
+    reporter = new Reporter(getDefaultOptions());
+    reporter.client = new RPClientMock();
     reporter.tempLaunchId = "tempLaunchId";
   });
 
@@ -93,4 +93,31 @@ describe("startSuite", () => {
     );
   });
 
+  test("should add sldc/slid to cucumber test", () => {
+    const sauceLabOptions =  {
+      enabled: true,
+      sldc: "foo"
+    }
+    Object.assign(reporter.options, {cucumberNestedSteps: true,  sauceLabOptions});
+    reporter.sessionId = "bar";
+
+    reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.FEATURE}));
+    reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.SCENARIO}));
+
+    expect(reporter.client.startTestItem).toBeCalledTimes(2);
+    expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
+      1,
+      {description: undefined, attributes: [{key: "SLID", value: "bar"}, {key: "SLDC", value: "foo"}], name: "foo", type: TYPE.TEST, retry: false},
+      reporter.tempLaunchId,
+      null,
+    );
+
+    const {id} = reporter.storage.getCurrentSuite();
+    expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
+      2,
+      {description: undefined, attributes: [], name: "foo", type: TYPE.STEP, retry: false},
+      reporter.tempLaunchId,
+      id,
+    );
+  });
 });

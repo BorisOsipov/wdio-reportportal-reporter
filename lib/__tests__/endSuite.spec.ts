@@ -1,6 +1,6 @@
 import {CUCUMBER_STATUS, CUCUMBER_TYPE, STATUS} from "../constants";
 import {suiteEndEvent, suiteStartEvent} from "./fixtures/events";
-import {getOptions, RPClient} from "./reportportal-client.mock";
+import {getDefaultOptions, RPClientMock} from "./reportportal-client.mock";
 
 const Reporter = require("../../build/reporter");
 
@@ -8,8 +8,8 @@ describe("endSuite", () => {
   let reporter: any;
 
   beforeEach(() => {
-    reporter = new Reporter(getOptions());
-    reporter.client = new RPClient();
+    reporter = new Reporter(getDefaultOptions());
+    reporter.client = new RPClientMock();
     reporter.tempLaunchId = "tempLaunchId";
     reporter.onSuiteStart(suiteStartEvent());
   });

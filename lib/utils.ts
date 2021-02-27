@@ -2,6 +2,8 @@
 import logger from "@wdio/logger";
 import validator from "validator";
 import {StartTestItem} from "./entities";
+import ReporterOptions from "./ReporterOptions";
+
 const stringify = require("json-stringify-safe");
 
 const OBJLENGTH = 10;
@@ -77,6 +79,24 @@ export const addBrowserParam = (browser: string, testItem: StartTestItem) => {
       return;
     }
     testItem.parameters = [param];
+  }
+};
+
+export const addSauceLabAttributes = (options: ReporterOptions, testItem: StartTestItem, sessionId: string) => {
+  const {sauceLabOptions, isSauseLabRun} = options;
+
+  if (isSauseLabRun) {
+    // tslint:disable-next-line:no-console
+    console.warn("Report portal reporter option 'isSauseLabRun' is deprecated and will be removed. Use a new config.sauceLabOptions reporter option to control integration.")
+    testItem.addSLID(sessionId);
+    return
+  }
+
+  if (sauceLabOptions?.enabled) {
+    testItem.addSLID(sessionId);
+    if (sauceLabOptions.sldc) {
+      testItem.addSLDC(sauceLabOptions.sldc);
+    }
   }
 };
 

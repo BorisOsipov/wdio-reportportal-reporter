@@ -7,7 +7,15 @@ import {CUCUMBER_STATUS, CUCUMBER_TYPE, EVENTS, LEVEL, STATUS, TYPE} from "./con
 import {EndTestItem, Issue, StartTestItem, StorageEntity} from "./entities";
 import ReporterOptions from "./ReporterOptions";
 import {Storage} from "./storage";
-import {addBrowserParam, isEmpty, isScreenshotCommand, limit, promiseErrorHandler, sendToReporter} from "./utils";
+import {
+  addBrowserParam,
+  addSauceLabAttributes,
+  isEmpty,
+  isScreenshotCommand,
+  limit,
+  promiseErrorHandler,
+  sendToReporter
+} from "./utils";
 
 const log = logger("wdio-reportportal-reporter");
 
@@ -67,12 +75,15 @@ class ReportPortalReporter extends Reporter {
   }
 
   onSuiteStart(suite) {
-    log.trace(`Start suite ${suite.title} ${suite.uid}`);
+    log.debug(`Start suite ${suite.title} ${suite.uid}`);
 
+    const isCucumberFeature = suite.type === CUCUMBER_TYPE.FEATURE;
     const suiteStartObj = this.options.cucumberNestedSteps ?
-      new StartTestItem(suite.title, suite.type === CUCUMBER_TYPE.FEATURE ? TYPE.TEST : TYPE.STEP) :
+      new StartTestItem(suite.title, isCucumberFeature ? TYPE.TEST : TYPE.STEP) :
       new StartTestItem(suite.title, TYPE.SUITE);
-
+    if (isCucumberFeature) {
+      addSauceLabAttributes(this.options, suiteStartObj, this.sessionId);
+    }
     if (this.options.cucumberNestedSteps && this.options.autoAttachCucumberFeatureToScenario) {
       switch (suite.type) {
         case CUCUMBER_TYPE.FEATURE:
@@ -112,7 +123,7 @@ class ReportPortalReporter extends Reporter {
   }
 
   onSuiteEnd(suite) {
-    log.trace(`End suite ${suite.title} ${suite.uid}`);
+    log.debug(`End suite ${suite.title} ${suite.uid}`);
 
     let status = STATUS.PASSED;
     if (this.options.cucumberNestedSteps) {
@@ -136,7 +147,7 @@ class ReportPortalReporter extends Reporter {
   }
 
   onTestStart(test, type = TYPE.STEP) {
-    log.trace(`Start test ${test.title} ${test.uid}`);
+    log.debug(`Start test ${test.title} ${test.uid}`);
     if (this.storage.getCurrentTest()) {
       return;
     }
@@ -146,12 +157,11 @@ class ReportPortalReporter extends Reporter {
 
     if (this.options.cucumberNestedSteps) {
       testStartObj.hasStats = false;
+    } else {
+      addSauceLabAttributes(this.options, testStartObj, this.sessionId);
     }
     if (this.options.parseTagsFromTestTitle) {
       testStartObj.addTags();
-    }
-    if (this.options.isSauseLabRun) {
-      testStartObj.addSauseLabId(this.sessionId);
     }
     if (this.options.setRetryTrue) {
       testStartObj.retry = true;
@@ -170,12 +180,12 @@ class ReportPortalReporter extends Reporter {
   }
 
   onTestPass(test) {
-    log.trace(`Pass test ${test.title} ${test.uid}`);
+    log.debug(`Pass test ${test.title} ${test.uid}`);
     this.testFinished(test, STATUS.PASSED);
   }
 
   onTestFail(test) {
-    log.trace(`Fail test ${test.title} ${test.uid} ${test.error.stack}`);
+    log.debug(`Fail test ${test.title} ${test.uid} ${test.error.stack}`);
     const testItem = this.storage.getCurrentTest();
     if (testItem === null) {
       this.onTestStart(test, TYPE.BEFORE_METHOD);
@@ -184,7 +194,7 @@ class ReportPortalReporter extends Reporter {
   }
 
   onTestSkip(test) {
-    log.trace(`Skip test ${test.title} ${test.uid}`);
+    log.debug(`Skip test ${test.title} ${test.uid}`);
     const testItem = this.storage.getCurrentTest();
     if (testItem === null) {
       this.onTestStart(test);
@@ -193,7 +203,7 @@ class ReportPortalReporter extends Reporter {
   }
 
   testFinished(test: any, status: STATUS, issue ?: Issue) {
-    log.trace(`Finish test ${test.title} ${test.uid}`);
+    log.debug(`Finish test ${test.title} ${test.uid}`);
     const testItem = this.storage.getCurrentTest();
     if (testItem === null) {
       return;
@@ -217,7 +227,7 @@ class ReportPortalReporter extends Reporter {
 
   // @ts-ignore
   onRunnerStart(runner, client: ReportPortalClient) {
-    log.trace(`Runner start`);
+    log.debug(`Runner start`);
     this.rpPromisesCompleted = false;
     this.isMultiremote = runner.isMultiremote;
     this.sanitizedCapabilities = runner.sanitizedCapabilities;
@@ -236,7 +246,7 @@ class ReportPortalReporter extends Reporter {
   }
 
   async onRunnerEnd() {
-    log.trace(`Runner end`);
+    log.debug(`Runner end`);
     try {
       return await this.client.getPromiseFinishAllItems(this.tempLaunchId);
     } catch (e) {
@@ -244,7 +254,7 @@ class ReportPortalReporter extends Reporter {
       log.error(e);
     } finally {
       this.isSynchronised = true;
-      log.trace(`Runner end sync`);
+      log.debug(`Runner end sync`);
     }
   }
 
@@ -289,11 +299,11 @@ class ReportPortalReporter extends Reporter {
   }
 
   onHookStart(hook) {
-    log.trace(`Start hook ${hook.title} ${hook.uid}`);
+    log.debug(`Start hook ${hook.title} ${hook.uid}`);
   }
 
   onHookEnd(hook) {
-    log.trace(`End hook ${hook.title} ${hook.uid} ${JSON.stringify(hook)}`);
+    log.debug(`End hook ${hook.title} ${hook.uid} ${JSON.stringify(hook)}`);
     if (hook.error) {
       const testItem = this.storage.getCurrentTest();
       if (testItem === null) {
