@@ -41,6 +41,7 @@ export class EndTestItem {
   public status: STATUS;
   public issue?: Issue;
   public description?: string;
+  public attributes: Attribute[] = []
 
   constructor(status: STATUS, issue?: Issue) {
     this.status = status;
