@@ -415,7 +415,7 @@ class ReportPortalReporter extends Reporter {
     process.on(EVENTS.RP_TEST_LOG, this.sendLogToTest.bind(this));
     process.on(EVENTS.RP_TEST_FILE, this.sendFileToTest.bind(this));
     process.on(EVENTS.RP_TEST_RETRY, this.finishTestManually.bind(this));
-    process.on("add attr event", this.addAttribute.bind(this));
+    process.on(EVENTS.RP_TEST_ATTRIBUTES, this.addAttribute.bind(this));
   }
 
   private now() {
