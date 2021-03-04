@@ -49,6 +49,10 @@ class ReportPortalReporter extends Reporter {
     sendToReporter(EVENTS.RP_TEST_RETRY, {test});
   }
 
+  public static addAttribute(key: string, value: string) {
+    sendToReporter(EVENTS.RP_TEST_ATTRIBUTES, { key, value });
+  }
+
   private static reporterName = "reportportal";
   private launchId: string;
   private client: ReportPortalClient;
@@ -219,7 +223,7 @@ class ReportPortalReporter extends Reporter {
         message,
       });
     }
-    finishTestObj.attributes.push(...this.currentTestAttributes);
+    finishTestObj.attributes = [...this.currentTestAttributes];
     const {promise} = this.client.finishTestItem(testItem.id, finishTestObj);
     promiseErrorHandler(promise);
 
@@ -315,9 +319,9 @@ class ReportPortalReporter extends Reporter {
     }
   }
 
-  private addAttribute(event: any) {
+  private addAttribute({key, value}) {
     // validate event key and value. at least nullity.
-    this.currentTestAttributes.push({key: event.key, value: event.value})
+    this.currentTestAttributes.push({key, value})
   }
 
   private finishTestManually(event: any) {
