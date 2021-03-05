@@ -69,23 +69,26 @@ Api methods can be accessed using:
 const reporter = require('wdio-reportportal-reporter')
 ```
 ### Methods description
+* `reporter.addAttribute({key, value}) ` – add an attribute to current test.
+  * `key` (*string*, optional) -  attribute key. It must be non-empty string.
+  * `value` (*string*, required)–  attribute value. It must be non-empty string.
 * `reporter.sendLog(level, message) ` – send log to current suite\test item.
     * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
-    * `message` (*String*)– log message content.
+    * `message` (*string*)– log message content.
 * `reporter.sendFile(level, name, content, [type])` – send file to current suite\test item.
     * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
     * `name` (*string*)– file name.
-    * `content` (*String*) – attachment content
-    * `type` (*String*, optional) – attachment MIME-type, `image/png` by default
+    * `content` (*string*) – attachment content
+    * `type` (*string*, optional) – attachment MIME-type, `image/png` by default
 * `reporter.sendLogToTest(test, level, message)` - send log to specific test.
     * `test` (*object*) - test object from `afterTest\afterStep` wdio hook
     * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
-    * `message` (*String*)– log message content.
+    * `message` (*string*)– log message content.
 * `reporter.sendFileToTest(test, level, name, content, [type])` – send file to to specific test.
     * `test` (*object*) - test object from `afterTest\afterStep` wdio hook
     * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
     * `name` (*string*)– file name.
-    * `content` (*String*) – attachment content
+    * `content` (*string*) – attachment content
     * `type` (*string*, optional) – attachment MIME-type, `image/png` by default
 
 Pay attention: `sendLog`\\`sendFile` sends log to **current running test item**. It means if you send log without active test(e.g from hooks or on suite level) it will not be reported Report Portal UI.
