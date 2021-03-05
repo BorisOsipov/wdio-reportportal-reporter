@@ -49,8 +49,26 @@ class ReportPortalReporter extends Reporter {
     sendToReporter(EVENTS.RP_TEST_RETRY, {test});
   }
 
-  public static addAttribute(key: string, value: string) {
-    sendToReporter(EVENTS.RP_TEST_ATTRIBUTES, { key, value });
+  public static addAttribute(attribute: Attribute) {
+    if (!attribute) {
+      throw new Error("Attribute should be an object")
+    }
+    const clonedAttribute = Object.assign({}, attribute)
+    if (clonedAttribute.value) {
+      clonedAttribute.value = String(clonedAttribute.value);
+      if (clonedAttribute.value.trim().length === 0) {
+        throw Error("Attribute value should not be an empty string")
+      }
+    } else {
+      throw new Error("Invalid attribute: " + JSON.stringify(attribute));
+    }
+    if (clonedAttribute.key) {
+      clonedAttribute.key = String(clonedAttribute.key);
+      if (clonedAttribute.key.trim().length === 0) {
+        throw Error("Attribute key should not be an empty string")
+      }
+    }
+    sendToReporter(EVENTS.RP_TEST_ATTRIBUTES, {...clonedAttribute});
   }
 
   private static reporterName = "reportportal";
@@ -134,7 +152,7 @@ class ReportPortalReporter extends Reporter {
     if (this.options.cucumberNestedSteps) {
       switch (suite.type) {
         case CUCUMBER_TYPE.SCENARIO:
-          const scenarioStatus = suite.tests.every(({ state }) => state === CUCUMBER_STATUS.PASSED);
+          const scenarioStatus = suite.tests.every(({state}) => state === CUCUMBER_STATUS.PASSED);
           status = scenarioStatus ? STATUS.PASSED : STATUS.FAILED;
           this.featureStatus = this.featureStatus === STATUS.PASSED && status === STATUS.PASSED ? STATUS.PASSED : STATUS.FAILED;
           break;
@@ -319,9 +337,8 @@ class ReportPortalReporter extends Reporter {
     }
   }
 
-  private addAttribute({key, value}) {
-    // validate event key and value. at least nullity.
-    this.currentTestAttributes.push({key, value})
+  private addAttribute(attribute: Attribute) {
+    this.currentTestAttributes.push({...attribute})
   }
 
   private finishTestManually(event: any) {
