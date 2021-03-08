@@ -107,7 +107,7 @@ class ReportPortalReporter extends Reporter {
     if (isCucumberFeature) {
       addSauceLabAttributes(this.options, suiteStartObj, this.sessionId);
     }
-    let codeRef = this.specFile.replace(process.cwd() + '/', '').trim();
+    let codeRef = this.specFile ? this.specFile.replace(process.cwd() + '/', '').trim() : this.specFile;
     if (this.options.cucumberNestedSteps && this.options.autoAttachCucumberFeatureToScenario) {
       switch (suite.type) {
         case CUCUMBER_TYPE.FEATURE:
@@ -127,7 +127,9 @@ class ReportPortalReporter extends Reporter {
       }
     }
 
-    codeRef += ':' + suite.uid.replace(suite.title, '').trim();
+    if (suite.uid) {
+      codeRef += ':' + suite.uid.replace(suite.title, '').trim();
+    }
 
     const suiteItem = this.storage.getCurrentSuite();
     let parentId = null;
@@ -181,7 +183,7 @@ class ReportPortalReporter extends Reporter {
     const suite = this.storage.getCurrentSuite();
     const testStartObj = new StartTestItem(test.title, type);
     const testTitleNoKeyword = test.title.replace(/^(Given|When|Then|And) /g, '').trim();
-    testStartObj.codeRef = this.specFile.replace(process.cwd() + '/', '').trim() + ':' + test.uid.replace(testTitleNoKeyword, '').trim();
+    testStartObj.codeRef = this.specFile ? this.specFile.replace(process.cwd() + '/', '').trim() + ':' + test.uid.replace(testTitleNoKeyword, '').trim() : this.specFile;
     if (this.options.cucumberNestedSteps) {
       testStartObj.hasStats = false;
     } else {
