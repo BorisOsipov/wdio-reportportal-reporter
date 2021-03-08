@@ -51,6 +51,7 @@ export enum CUCUMBER_TYPE {
 export enum CUCUMBER_STATUS {
   PASSED = "passed",
   FAILED = "failed",
+  SKIPPED = "skipped"
 }
 
 export enum MODE {
