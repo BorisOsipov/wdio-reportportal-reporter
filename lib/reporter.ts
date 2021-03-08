@@ -107,6 +107,7 @@ class ReportPortalReporter extends Reporter {
     if (isCucumberFeature) {
       addSauceLabAttributes(this.options, suiteStartObj, this.sessionId);
     }
+    let codeRef = this.specFile.replace(process.cwd() + '/', '').trim();
     if (this.options.cucumberNestedSteps && this.options.autoAttachCucumberFeatureToScenario) {
       switch (suite.type) {
         case CUCUMBER_TYPE.FEATURE:
@@ -119,13 +120,14 @@ class ReportPortalReporter extends Reporter {
               value: this.featureName,
             },
           ];
-
           if (this.options.setRetryTrue) {
             suiteStartObj.retry = true;
           }
           break;
       }
     }
+
+    codeRef += ':' + suite.uid.replace(suite.title, '').trim();
 
     const suiteItem = this.storage.getCurrentSuite();
     let parentId = null;
@@ -135,6 +137,7 @@ class ReportPortalReporter extends Reporter {
     if (this.options.parseTagsFromTestTitle) {
       suiteStartObj.addTags();
     }
+    suiteStartObj.codeRef = codeRef;
     suiteStartObj.description = this.sanitizedCapabilities;
     const {tempId, promise} = this.client.startTestItem(
       suiteStartObj,
@@ -152,8 +155,9 @@ class ReportPortalReporter extends Reporter {
     if (this.options.cucumberNestedSteps) {
       switch (suite.type) {
         case CUCUMBER_TYPE.SCENARIO:
-          const scenarioStatus = suite.tests.every(({state}) => state === CUCUMBER_STATUS.PASSED);
-          status = scenarioStatus ? STATUS.PASSED : STATUS.FAILED;
+          const scenarioStepsAllPassed = suite.tests.every(({state}) => state === CUCUMBER_STATUS.PASSED);
+          const scenarioStepsAllSkipped = suite.tests.every(({ state }) => state === CUCUMBER_STATUS.SKIPPED);
+          status = scenarioStepsAllPassed ? STATUS.PASSED : scenarioStepsAllSkipped ? STATUS.SKIPPED : STATUS.FAILED;
           this.featureStatus = this.featureStatus === STATUS.PASSED && status === STATUS.PASSED ? STATUS.PASSED : STATUS.FAILED;
           break;
         case CUCUMBER_TYPE.FEATURE:
@@ -176,8 +180,8 @@ class ReportPortalReporter extends Reporter {
     }
     const suite = this.storage.getCurrentSuite();
     const testStartObj = new StartTestItem(test.title, type);
-    testStartObj.codeRef = this.specFile;
-
+    const testTitleNoKeyword = test.title.replace(/^(Given|When|Then|And) /g, '').trim();
+    testStartObj.codeRef = this.specFile.replace(process.cwd() + '/', '').trim() + ':' + test.uid.replace(testTitleNoKeyword, '').trim();
     if (this.options.cucumberNestedSteps) {
       testStartObj.hasStats = false;
     } else {
@@ -231,7 +235,6 @@ class ReportPortalReporter extends Reporter {
     if (testItem === null) {
       return;
     }
-
     const finishTestObj = new EndTestItem(status, issue);
     if (status === STATUS.FAILED) {
       const message = `${test.error.stack} `;
@@ -258,6 +261,9 @@ class ReportPortalReporter extends Reporter {
     this.sessionId = runner.sessionId;
     this.client = client || new ReportPortalClient(this.options.reportPortalClientConfig);
     this.launchId = process.env.RP_LAUNCH_ID;
+    if (this.options.writeLaunchIdToFile) {
+      writeFileSync('./RP_LAUNCH_ID', this.launchId);
+    }
     this.specFile = runner.specs[0];
     const startLaunchObj = {
       attributes: this.options.reportPortalClientConfig.attributes,
