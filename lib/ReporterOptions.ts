@@ -32,5 +32,4 @@ export default class ReporterOptions {
   public cucumberNestedSteps = false;
   public autoAttachCucumberFeatureToScenario = false;
   public reportPortalClientConfig = {mode: MODE.DEFAULT, attributes: [Attribute], description: ""};
-  public writeLaunchIdToFile = false;
 }

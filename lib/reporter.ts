@@ -263,9 +263,6 @@ class ReportPortalReporter extends Reporter {
     this.sessionId = runner.sessionId;
     this.client = client || new ReportPortalClient(this.options.reportPortalClientConfig);
     this.launchId = process.env.RP_LAUNCH_ID;
-    if (this.options.writeLaunchIdToFile) {
-      writeFileSync('./RP_LAUNCH_ID', this.launchId);
-    }
     this.specFile = runner.specs[0];
     const startLaunchObj = {
       attributes: this.options.reportPortalClientConfig.attributes,
