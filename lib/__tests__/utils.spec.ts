@@ -1,3 +1,4 @@
+import * as path from "path";
 import {TYPE} from "../constants";
 import {StartTestItem} from "../entities";
 import {
@@ -6,7 +7,8 @@ import {
   addSauceLabAttributes,
   isScreenshotCommand,
   parseTags,
-  sendToReporter
+  sendToReporter,
+  addCodeRef
 } from "../utils";
 import {getDefaultOptions} from "./reportportal-client.mock";
 
@@ -109,11 +111,11 @@ describe("#addSauceLabAttributes",  () => {
   test("can use old config param isSauseLabRun", () => {
     const testItem = new StartTestItem("name", TYPE.STEP);
     const reporterOptions = getDefaultOptions();
-    Object.assign(reporterOptions, {isSauseLabRun: true})
+    Object.assign(reporterOptions, {isSauseLabRun: true});
 
-    addSauceLabAttributes(reporterOptions, testItem, sessionId)
+    addSauceLabAttributes(reporterOptions, testItem, sessionId);
 
-    expect(testItem.attributes.length).toEqual(1)
+    expect(testItem.attributes.length).toEqual(1);
     expect(testItem.attributes).toEqual([{key: "SLID", value: sessionId}])
   });
 
@@ -121,13 +123,13 @@ describe("#addSauceLabAttributes",  () => {
     const testItem = new StartTestItem("name", TYPE.STEP);
     const sauceLabOptions =  {
       enabled: true
-    }
+    };
     const reporterOptions = getDefaultOptions();
     Object.assign(reporterOptions, {sauceLabOptions});
 
-    addSauceLabAttributes(reporterOptions, testItem, sessionId)
+    addSauceLabAttributes(reporterOptions, testItem, sessionId);
 
-    expect(testItem.attributes.length).toEqual(1)
+    expect(testItem.attributes.length).toEqual(1);
     expect(testItem.attributes).toEqual([{key: "SLID", value: sessionId}])
   });
 
@@ -136,13 +138,13 @@ describe("#addSauceLabAttributes",  () => {
     const sauceLabOptions =  {
       enabled: true,
       sldc: "foo"
-    }
+    };
     const reporterOptions = getDefaultOptions();
     Object.assign(reporterOptions, {sauceLabOptions});
 
-    addSauceLabAttributes(reporterOptions, testItem, sessionId)
+    addSauceLabAttributes(reporterOptions, testItem, sessionId);
 
-    expect(testItem.attributes.length).toEqual(2)
+    expect(testItem.attributes.length).toEqual(2);
     expect(testItem.attributes).toEqual([{key: "SLID", value: sessionId}, {key: "SLDC", value: "foo"}])
   });
 
@@ -150,8 +152,22 @@ describe("#addSauceLabAttributes",  () => {
     const testItem = new StartTestItem("name", TYPE.STEP);
     const reporterOptions = getDefaultOptions();
 
-    addSauceLabAttributes(reporterOptions, testItem, sessionId)
+    addSauceLabAttributes(reporterOptions, testItem, sessionId);
 
     expect(testItem.attributes.length).toEqual(0)
+  });
+});
+
+describe("#addCodeRef",  () => {
+  test("should add code reference to the test item", () => {
+    const testStartObj = new StartTestItem("foo", TYPE.TEST);
+    addCodeRef("C:\\webdriver.io\\tests\\example.spec.js", testStartObj);
+    expect(testStartObj.codeRef).toEqual(`C:\\webdriver.io\\tests\\example.spec.js${path.sep}foo`);
+  });
+
+  test("should not add code reference if missing", () => {
+    const testStartObj = new StartTestItem("foo", TYPE.TEST);
+    addCodeRef(undefined, testStartObj);
+    expect(testStartObj.codeRef).toBeUndefined();
   });
 });
