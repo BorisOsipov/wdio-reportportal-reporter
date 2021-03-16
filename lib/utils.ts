@@ -1,6 +1,7 @@
 // @ts-ignore
 import logger from "@wdio/logger";
 import validator from "validator";
+import * as path from "path";
 import {StartTestItem} from "./entities";
 import ReporterOptions from "./ReporterOptions";
 
@@ -103,6 +104,12 @@ export const addSauceLabAttributes = (options: ReporterOptions, testItem: StartT
 export const addDescription = (description: string, testItem: StartTestItem) => {
   if (description) {
     testItem.description = description;
+  }
+};
+
+export const addCodeRef = (basePath: string, testItem: StartTestItem) => {
+  if (basePath) {
+    testItem.codeRef = `${basePath}${path.sep}${testItem.name}`;
   }
 };
 

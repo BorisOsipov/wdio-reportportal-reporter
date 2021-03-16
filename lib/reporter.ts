@@ -14,7 +14,8 @@ import {
   isScreenshotCommand,
   limit,
   promiseErrorHandler,
-  sendToReporter
+  sendToReporter,
+  addCodeRef
 } from "./utils";
 
 const log = logger("wdio-reportportal-reporter");
@@ -82,7 +83,7 @@ class ReportPortalReporter extends Reporter {
   private sanitizedCapabilities: string;
   private sessionId: string;
   private rpPromisesCompleted = true;
-  private specFile: string;
+  private specFilePath: string;
   private featureStatus: STATUS;
   private featureName: string;
   private currentTestAttributes: Attribute[] = [];
@@ -176,7 +177,7 @@ class ReportPortalReporter extends Reporter {
     }
     const suite = this.storage.getCurrentSuite();
     const testStartObj = new StartTestItem(test.title, type);
-    testStartObj.codeRef = this.specFile;
+    addCodeRef(this.specFilePath, testStartObj);
 
     if (this.options.cucumberNestedSteps) {
       testStartObj.hasStats = false;
@@ -258,7 +259,7 @@ class ReportPortalReporter extends Reporter {
     this.sessionId = runner.sessionId;
     this.client = client || new ReportPortalClient(this.options.reportPortalClientConfig);
     this.launchId = process.env.RP_LAUNCH_ID;
-    this.specFile = runner.specs[0];
+    this.specFilePath = runner.specs[0];
     const startLaunchObj = {
       attributes: this.options.reportPortalClientConfig.attributes,
       description: this.options.reportPortalClientConfig.description,
