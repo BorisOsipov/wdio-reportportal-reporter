@@ -1,8 +1,10 @@
 // @ts-ignore
 import logger from "@wdio/logger";
 import validator from "validator";
+import * as path from "path";
 import {StartTestItem} from "./entities";
 import ReporterOptions from "./ReporterOptions";
+import {TestStats} from "@wdio/reporter";
 
 const stringify = require("json-stringify-safe");
 
@@ -109,11 +111,22 @@ export const addDescription = (description: string, testItem: StartTestItem) => 
 export const parseTags = (text: string): string[] => ("" + text).match(TAGS_PATTERN) || [];
 
 export const isScreenshotCommand = (command: any) => {
-  const isScrenshotEndpoint = /\/session\/[^/]*\/screenshot/;
-  return isScrenshotEndpoint.test(command.endpoint);
+  const isScreenshotEndpoint = /\/session\/[^/]*\/screenshot/;
+  return isScreenshotEndpoint.test(command.endpoint);
 };
 
 export const sendToReporter = (event: any, msg = {}) => {
   // @ts-ignore
   process.emit(event, msg);
 };
+
+export const getRelativePath = (val: string) => val.replace(`${process.cwd()}${path.sep}`, '').trim()
+
+export const addCodeRef = (specFilePath: string, testname: string, testItem: StartTestItem) => {
+  testItem.codeRef = `${getRelativePath(specFilePath)}:${testname}`;
+};
+
+export const addCodeRefCucumber = (specFilePath: string, test: TestStats, testItem: StartTestItem) => {
+  const testTitleNoKeyword = test.title.replace(/^(Given|When|Then|And) /g, '').trim();
+  testItem.codeRef = `${getRelativePath(specFilePath)}:${test.uid.replace(testTitleNoKeyword, '').trim()}`;
+}

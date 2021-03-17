@@ -9,7 +9,10 @@ import ReporterOptions, {Attribute} from "./ReporterOptions";
 import {Storage} from "./storage";
 import {
   addBrowserParam,
+  addCodeRef,
+  addCodeRefCucumber,
   addSauceLabAttributes,
+  getRelativePath,
   isEmpty,
   isScreenshotCommand,
   limit,
@@ -79,10 +82,11 @@ class ReportPortalReporter extends Reporter {
   // @ts-ignore temporary until wdio typings make stable
   private readonly options: ReporterOptions;
   private isMultiremote: boolean;
+  private isCucumberFramework: boolean;
   private sanitizedCapabilities: string;
   private sessionId: string;
   private rpPromisesCompleted = true;
-  private specFile: string;
+  private specFilePath: string;
   private featureStatus: STATUS;
   private featureName: string;
   private currentTestAttributes: Attribute[] = [];
@@ -101,13 +105,16 @@ class ReportPortalReporter extends Reporter {
     log.debug(`Start suite ${suite.title} ${suite.uid}`);
 
     const isCucumberFeature = suite.type === CUCUMBER_TYPE.FEATURE;
+    const isCucumberScenario = suite.type === CUCUMBER_TYPE.SCENARIO;
     const suiteStartObj = this.options.cucumberNestedSteps ?
       new StartTestItem(suite.title, isCucumberFeature ? TYPE.TEST : TYPE.STEP) :
       new StartTestItem(suite.title, TYPE.SUITE);
     if (isCucumberFeature) {
       addSauceLabAttributes(this.options, suiteStartObj, this.sessionId);
     }
-    let codeRef = this.specFile ? this.specFile.replace(process.cwd() + '/', '').trim() : this.specFile;
+    if (isCucumberScenario) {
+      suiteStartObj.codeRef = getRelativePath(this.specFilePath) + ':' + suite.uid.replace(suite.title, '').trim();
+    }
     if (this.options.cucumberNestedSteps && this.options.autoAttachCucumberFeatureToScenario) {
       switch (suite.type) {
         case CUCUMBER_TYPE.FEATURE:
@@ -126,11 +133,6 @@ class ReportPortalReporter extends Reporter {
           break;
       }
     }
-
-    if (suite.uid) {
-      codeRef += ':' + suite.uid.replace(suite.title, '').trim();
-    }
-
     const suiteItem = this.storage.getCurrentSuite();
     let parentId = null;
     if (suiteItem !== null) {
@@ -139,7 +141,6 @@ class ReportPortalReporter extends Reporter {
     if (this.options.parseTagsFromTestTitle) {
       suiteStartObj.addTags();
     }
-    suiteStartObj.codeRef = codeRef;
     suiteStartObj.description = this.sanitizedCapabilities;
     const {tempId, promise} = this.client.startTestItem(
       suiteStartObj,
@@ -182,8 +183,11 @@ class ReportPortalReporter extends Reporter {
     }
     const suite = this.storage.getCurrentSuite();
     const testStartObj = new StartTestItem(test.title, type);
-    const testTitleNoKeyword = test.title.replace(/^(Given|When|Then|And) /g, '').trim();
-    testStartObj.codeRef = this.specFile ? this.specFile.replace(process.cwd() + '/', '').trim() + ':' + test.uid.replace(testTitleNoKeyword, '').trim() : this.specFile;
+    if(this.isCucumberFramework) {
+      addCodeRefCucumber(this.specFilePath, test, testStartObj)
+    } else {
+      addCodeRef(this.specFilePath, test.fullTitle, testStartObj)
+    }
     if (this.options.cucumberNestedSteps) {
       testStartObj.hasStats = false;
     } else {
@@ -261,9 +265,10 @@ class ReportPortalReporter extends Reporter {
     this.isMultiremote = runner.isMultiremote;
     this.sanitizedCapabilities = runner.sanitizedCapabilities;
     this.sessionId = runner.sessionId;
+    this.isCucumberFramework = runner.config.framework === 'cucumber'
     this.client = client || new ReportPortalClient(this.options.reportPortalClientConfig);
     this.launchId = process.env.RP_LAUNCH_ID;
-    this.specFile = runner.specs[0];
+    this.specFilePath = runner.specs[0] || "";
     const startLaunchObj = {
       attributes: this.options.reportPortalClientConfig.attributes,
       description: this.options.reportPortalClientConfig.description,
