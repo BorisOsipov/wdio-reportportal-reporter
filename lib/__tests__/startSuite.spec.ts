@@ -11,6 +11,7 @@ describe("startSuite", () => {
     reporter = new Reporter(getDefaultOptions());
     reporter.client = new RPClientMock();
     reporter.tempLaunchId = "tempLaunchId";
+    reporter.specFilePath = "C:/work/home/spec.ts"
   });
 
   test("should startSuite", () => {
@@ -72,7 +73,14 @@ describe("startSuite", () => {
     const {id} = reporter.storage.getCurrentSuite();
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       2,
-      {description: undefined, attributes: [], name: "foo", type: TYPE.STEP, retry: false},
+      {
+        description: undefined,
+        attributes: [],
+        name: "foo",
+        type: TYPE.STEP,
+        retry: false,
+        codeRef: "C:/work/home/spec.ts:FooBarSuite"
+      },
       reporter.tempLaunchId,
       id,
     );
@@ -87,27 +95,38 @@ describe("startSuite", () => {
     const {id} = reporter.storage.getCurrentSuite();
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       2,
-      {name: "foo", type: TYPE.STEP, retry: false, attributes: [{key: CUCUMBER_TYPE.FEATURE, value: "foo"}]},
+      {
+        name: "foo",
+        type: TYPE.STEP,
+        retry: false,
+        attributes: [{key: CUCUMBER_TYPE.FEATURE, value: "foo"}],
+        codeRef: "C:/work/home/spec.ts:FooBarSuite"
+      },
       reporter.tempLaunchId,
       id,
     );
   });
 
   test("should add sldc/slid to cucumber test", () => {
-    const sauceLabOptions =  {
+    const sauceLabOptions = {
       enabled: true,
       sldc: "foo"
     }
-    Object.assign(reporter.options, {cucumberNestedSteps: true,  sauceLabOptions});
+    Object.assign(reporter.options, {cucumberNestedSteps: true, sauceLabOptions});
     reporter.sessionId = "bar";
-
     reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.FEATURE}));
     reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.SCENARIO}));
 
     expect(reporter.client.startTestItem).toBeCalledTimes(2);
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       1,
-      {description: undefined, attributes: [{key: "SLID", value: "bar"}, {key: "SLDC", value: "foo"}], name: "foo", type: TYPE.TEST, retry: false},
+      {
+        description: undefined,
+        attributes: [{key: "SLID", value: "bar"}, {key: "SLDC", value: "foo"}],
+        name: "foo",
+        type: TYPE.TEST,
+        retry: false
+      },
       reporter.tempLaunchId,
       null,
     );
@@ -115,7 +134,14 @@ describe("startSuite", () => {
     const {id} = reporter.storage.getCurrentSuite();
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       2,
-      {description: undefined, attributes: [], name: "foo", type: TYPE.STEP, retry: false},
+      {
+        description: undefined,
+        attributes: [],
+        name: "foo",
+        type: TYPE.STEP,
+        retry: false,
+        codeRef: "C:/work/home/spec.ts:FooBarSuite"
+      },
       reporter.tempLaunchId,
       id,
     );

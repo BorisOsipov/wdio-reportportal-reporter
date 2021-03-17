@@ -4,7 +4,7 @@ import {getDefaultOptions, RPClientMock} from "./reportportal-client.mock";
 
 const Reporter = require("../../build/reporter");
 const REAL_LAUNCH_ID = "FOO_ID";
-const runnerStat = {specs: ["foo"]};
+const runnerStat = {specs: ["foo"], config: {framework: "mocha"}};
 
 describe("startLaunch", () => {
   afterEach(() => {
