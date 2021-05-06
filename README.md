@@ -80,6 +80,7 @@ const reporter = require('wdio-reportportal-reporter')
     * `name` (*string*)– file name.
     * `content` (*string*) – attachment content
     * `type` (*string*, optional) – attachment MIME-type, `image/png` by default
+    * `message` (*string*)– log message content.
 * `reporter.sendLogToTest(test, level, message)` - send log to specific test.
     * `test` (*object*) - test object from `afterTest\afterStep` wdio hook
     * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
@@ -90,6 +91,8 @@ const reporter = require('wdio-reportportal-reporter')
     * `name` (*string*)– file name.
     * `content` (*string*) – attachment content
     * `type` (*string*, optional) – attachment MIME-type, `image/png` by default
+    * `message` (*string*)– log message content.
+
 
 Pay attention: `sendLog`\\`sendFile` sends log to **current running test item**. It means if you send log without active test(e.g from hooks or on suite level) it will not be reported Report Portal UI.
 
