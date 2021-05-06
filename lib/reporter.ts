@@ -36,16 +36,16 @@ class ReportPortalReporter extends Reporter {
     sendToReporter(EVENTS.RP_LOG, {level, message});
   }
 
-  public static sendFile(level: LEVEL | keyof typeof LEVEL, name: string, content: any, type = "image/png") {
-    sendToReporter(EVENTS.RP_FILE, {level, name, content, type});
+  public static sendFile(level: LEVEL | keyof typeof LEVEL, name: string, content: any, type = "image/png", message = "") {
+    sendToReporter(EVENTS.RP_FILE, {level, name, content, type, message});
   }
 
   public static sendLogToTest(test: any, level: LEVEL | keyof typeof LEVEL, message: any) {
     sendToReporter(EVENTS.RP_TEST_LOG, {test, level, message});
   }
 
-  public static sendFileToTest(test: any, level: LEVEL | keyof typeof LEVEL, name: string, content: any, type = "image/png") {
-    sendToReporter(EVENTS.RP_TEST_FILE, {test, level, name, content, type});
+  public static sendFileToTest(test: any, level: LEVEL | keyof typeof LEVEL, name: string, content: any, type = "image/png", message = "") {
+    sendToReporter(EVENTS.RP_TEST_FILE, {test, level, name, content, type, message});
   }
 
   public static finishTestManually(test: any) {
@@ -318,6 +318,7 @@ class ReportPortalReporter extends Reporter {
           content: command.result.value,
           level: screenshotsLogLevel,
           name: "screenshot.png",
+          message: "screenshot"
         };
         this.sendFile(obj);
       }
@@ -381,14 +382,14 @@ class ReportPortalReporter extends Reporter {
     promiseErrorHandler(promise);
   }
 
-  private sendFile({level, name, content, type = "image/png"}) {
+  private sendFile({level, name, content, type = "image/png", message = ""}) {
     const testItem = this.storage.getCurrentTest();
     if (!testItem) {
       log.warn(`Can not send file to test. There is no running tests`);
       return;
     }
 
-    const {promise} = this.client.sendLog(testItem.id, {level}, {name, content, type});
+    const {promise} = this.client.sendLog(testItem.id, {level}, {name, content, type, message});
     promiseErrorHandler(promise);
   }
 
@@ -416,7 +417,7 @@ class ReportPortalReporter extends Reporter {
     promiseErrorHandler(promise);
   }
 
-  private async sendFileToTest({test, level, name, content, type = "image/png"}) {
+  private async sendFileToTest({test, level, name, content, type = "image/png", message = ""}) {
     const testObj = this.storage.getStartedTests().reverse().find((startedTest) => {
       return startedTest.wdioEntity.title === test.title;
     });
@@ -430,7 +431,7 @@ class ReportPortalReporter extends Reporter {
       itemUuid: rs.id,
       launchUuid: this.launchId,
       level,
-      message: "",
+      message,
       time: this.now(),
     };
     // to avoid https://github.com/BorisOsipov/wdio-reportportal-reporter/issues/42#issuecomment-456573592
