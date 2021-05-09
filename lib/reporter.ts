@@ -258,15 +258,14 @@ class ReportPortalReporter extends Reporter {
     this.currentTestAttributes = [];
   }
 
-  // @ts-ignore
-  onRunnerStart(runner, client: ReportPortalClient) {
+  onRunnerStart(runner) {
     log.debug(`Runner start`);
     this.rpPromisesCompleted = false;
     this.isMultiremote = runner.isMultiremote;
     this.sanitizedCapabilities = runner.sanitizedCapabilities;
     this.sessionId = runner.sessionId;
     this.isCucumberFramework = runner.config.framework === 'cucumber'
-    this.client = client || new ReportPortalClient(this.options.reportPortalClientConfig);
+    this.client = this.getReportPortalClient();
     this.launchId = process.env.RP_LAUNCH_ID;
     this.specFilePath = runner.specs[0] || "";
     const startLaunchObj = {
@@ -345,6 +344,10 @@ class ReportPortalReporter extends Reporter {
       }
       this.testFinished(hook, STATUS.FAILED);
     }
+  }
+
+  private getReportPortalClient(): ReportPortalClient{
+    return new ReportPortalClient(this.options.reportPortalClientConfig);
   }
 
   private addAttribute(attribute: Attribute) {

@@ -14,10 +14,11 @@ describe("startLaunch", () => {
   test("should startLaunch with default mode", () => {
     const options = getDefaultOptions();
     const reporter = new Reporter(options);
-    const client = new RPClientMock();
     process.env.RP_LAUNCH_ID = REAL_LAUNCH_ID;
 
-    reporter.onRunnerStart(runnerStat, client);
+    jest.spyOn(reporter, 'getReportPortalClient').mockImplementation(() =>  new RPClientMock());
+
+    reporter.onRunnerStart(runnerStat);
 
     expect(reporter.tempLaunchId).toEqual("startLaunch");
     expect(reporter.launchId).toEqual(REAL_LAUNCH_ID);
@@ -40,10 +41,11 @@ describe("startLaunch", () => {
     options.reportPortalClientConfig.attributes = [new Attribute("foo", "bar")];
     options.reportPortalClientConfig.description = "bar";
     const reporter = new Reporter(options);
-    const client = new RPClientMock();
     process.env.RP_LAUNCH_ID = REAL_LAUNCH_ID;
+    process.env.RP_MOCK_CLIENT = "true";
 
-    reporter.onRunnerStart(runnerStat, client);
+    jest.spyOn(reporter, 'getReportPortalClient').mockImplementation(() =>  new RPClientMock());
+    reporter.onRunnerStart(runnerStat);
 
     expect(reporter.tempLaunchId).toEqual("startLaunch");
     expect(reporter.launchId).toEqual(REAL_LAUNCH_ID);
