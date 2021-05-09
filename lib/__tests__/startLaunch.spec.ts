@@ -42,7 +42,6 @@ describe("startLaunch", () => {
     options.reportPortalClientConfig.description = "bar";
     const reporter = new Reporter(options);
     process.env.RP_LAUNCH_ID = REAL_LAUNCH_ID;
-    process.env.RP_MOCK_CLIENT = "true";
 
     jest.spyOn(reporter, 'getReportPortalClient').mockImplementation(() =>  new RPClientMock());
     reporter.onRunnerStart(runnerStat);
