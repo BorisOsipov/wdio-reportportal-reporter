@@ -48,10 +48,11 @@ export enum CUCUMBER_TYPE {
   SCENARIO = "scenario",
 }
 
-export enum CUCUMBER_STATUS {
+export enum WDIO_TEST_STATUS {
   PASSED = "passed",
   FAILED = "failed",
-  SKIPPED = "skipped"
+  SKIPPED = "skipped",
+  PENDING = "pending"
 }
 
 export enum MODE {
