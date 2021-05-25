@@ -1,4 +1,4 @@
-import {CUCUMBER_STATUS, CUCUMBER_TYPE, STATUS} from "../constants";
+import {WDIO_TEST_STATUS, CUCUMBER_TYPE, STATUS} from "../constants";
 import {suiteEndEvent, suiteStartEvent} from "./fixtures/events";
 import {getDefaultOptions, RPClientMock} from "./reportportal-client.mock";
 
@@ -14,7 +14,7 @@ describe("endSuite", () => {
     reporter.onSuiteStart(suiteStartEvent());
   });
 
-  test("should endSuite", () => {
+  test("should endSuite as passed", () => {
     const {id} = reporter.storage.getCurrentSuite();
     reporter.onSuiteEnd(suiteEndEvent());
 
@@ -22,6 +22,28 @@ describe("endSuite", () => {
     expect(reporter.client.finishTestItem).toBeCalledWith(
       id,
       {status: STATUS.PASSED},
+    );
+  });
+
+
+  test("should set status as failing if there are failed tests", () => {
+    const {id} = reporter.storage.getCurrentSuite();
+    reporter.onSuiteEnd(Object.assign(
+      suiteEndEvent(),
+      {
+        tests: [
+          {
+            state: WDIO_TEST_STATUS.FAILED,
+          },
+          {
+            state: WDIO_TEST_STATUS.PASSED,
+          },
+        ]
+      }));
+
+    expect(reporter.client.finishTestItem).toBeCalledWith(
+      id,
+      {status: STATUS.FAILED},
     );
   });
 
@@ -33,10 +55,10 @@ describe("endSuite", () => {
       {
         tests: [
           {
-            state: CUCUMBER_STATUS.PASSED,
+            state: WDIO_TEST_STATUS.PASSED,
           },
           {
-            state: CUCUMBER_STATUS.PASSED,
+            state: WDIO_TEST_STATUS.PASSED,
           },
         ],
         type: CUCUMBER_TYPE.SCENARIO,
@@ -56,10 +78,10 @@ describe("endSuite", () => {
       {
         tests: [
           {
-            state: CUCUMBER_STATUS.FAILED,
+            state: WDIO_TEST_STATUS.FAILED,
           },
           {
-            state: CUCUMBER_STATUS.PASSED,
+            state: WDIO_TEST_STATUS.PASSED,
           },
         ],
         type: CUCUMBER_TYPE.SCENARIO,

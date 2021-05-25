@@ -3,7 +3,7 @@ import Reporter from "@wdio/reporter";
 import {createHash} from "crypto";
 import * as path from "path";
 import * as ReportPortalClient from "reportportal-js-client";
-import {CUCUMBER_STATUS, CUCUMBER_TYPE, EVENTS, LEVEL, STATUS, TYPE} from "./constants";
+import {WDIO_TEST_STATUS, CUCUMBER_TYPE, EVENTS, LEVEL, STATUS, TYPE} from "./constants";
 import {EndTestItem, Issue, StartTestItem, StorageEntity} from "./entities";
 import ReporterOptions, {Attribute} from "./ReporterOptions";
 import {Storage} from "./storage";
@@ -154,23 +154,24 @@ class ReportPortalReporter extends Reporter {
   onSuiteEnd(suite) {
     log.debug(`End suite ${suite.title} ${suite.uid}`);
 
-    let status = STATUS.PASSED;
+    const isSomeTestFailed = suite.tests.some(({ state }) => state === WDIO_TEST_STATUS.FAILED);
+    let suiteStatus = isSomeTestFailed ? STATUS.FAILED : STATUS.PASSED;
     if (this.options.cucumberNestedSteps) {
       switch (suite.type) {
         case CUCUMBER_TYPE.SCENARIO:
-          const scenarioStepsAllPassed = suite.tests.every(({state}) => state === CUCUMBER_STATUS.PASSED);
-          const scenarioStepsAllSkipped = suite.tests.every(({ state }) => state === CUCUMBER_STATUS.SKIPPED);
-          status = scenarioStepsAllPassed ? STATUS.PASSED : scenarioStepsAllSkipped ? STATUS.SKIPPED : STATUS.FAILED;
-          this.featureStatus = this.featureStatus === STATUS.PASSED && status === STATUS.PASSED ? STATUS.PASSED : STATUS.FAILED;
+          const scenarioStepsAllPassed = suite.tests.every(({state}) => state === WDIO_TEST_STATUS.PASSED);
+          const scenarioStepsAllSkipped = suite.tests.every(({ state }) => state === WDIO_TEST_STATUS.SKIPPED);
+          suiteStatus = scenarioStepsAllPassed ? STATUS.PASSED : scenarioStepsAllSkipped ? STATUS.SKIPPED : STATUS.FAILED;
+          this.featureStatus = this.featureStatus === STATUS.PASSED && suiteStatus === STATUS.PASSED ? STATUS.PASSED : STATUS.FAILED;
           break;
         case CUCUMBER_TYPE.FEATURE:
-          status = this.featureStatus;
+          suiteStatus = this.featureStatus;
           break;
       }
     }
 
     const suiteItem = this.storage.getCurrentSuite();
-    const finishSuiteObj = {status};
+    const finishSuiteObj = {status: suiteStatus};
     const {promise} = this.client.finishTestItem(suiteItem.id, finishSuiteObj);
     promiseErrorHandler(promise);
     this.storage.removeSuite();
