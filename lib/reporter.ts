@@ -274,9 +274,19 @@ class ReportPortalReporter extends Reporter {
       description: this.options.reportPortalClientConfig.description,
       id: this.launchId,
       mode: this.options.reportPortalClientConfig.mode,
+      rerun: false,
+      rerunOf: null,
     };
-    const {tempId} = this.client.startLaunch(startLaunchObj);
-    this.tempLaunchId = tempId;
+    if (runner.retry > 0) {
+      delete startLaunchObj.id;
+      startLaunchObj.rerun = true;
+      startLaunchObj.rerunOf = this.launchId;
+      const result = this.client.startLaunch(startLaunchObj);
+      this.tempLaunchId = result.tempId;
+    } else {
+      const {tempId} = this.client.startLaunch(startLaunchObj);
+      this.tempLaunchId = tempId;
+    }
   }
 
   async onRunnerEnd() {
