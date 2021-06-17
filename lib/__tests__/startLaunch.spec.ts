@@ -30,6 +30,8 @@ describe("startLaunch", () => {
       description: options.reportPortalClientConfig.description,
       id: REAL_LAUNCH_ID,
       mode: options.reportPortalClientConfig.mode,
+      rerun: false,
+      rerunOf: null,
     };
     expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
   });
@@ -55,6 +57,8 @@ describe("startLaunch", () => {
       description: options.reportPortalClientConfig.description,
       id: REAL_LAUNCH_ID,
       mode: options.reportPortalClientConfig.mode,
+      rerun: false,
+      rerunOf: null,
     };
     expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
   });
