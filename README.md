@@ -4,16 +4,14 @@ WDIO Report Portal Reporter
 
 ![npm](https://img.shields.io/npm/v/wdio-reportportal-reporter)
 ![npm](https://img.shields.io/npm/dm/wdio-reportportal-reporter)
-> A WebdriverIO v6 reporter plugin to report results to Report Portal(http://reportportal.io/).
-> For v4 version see [this branch](https://github.com/BorisOsipov/wdio-reportportal-reporter/tree/wdio_v4#wdio-report-portal-reporter)
-> For Report Portal v4 use `5.X.X` releases
+> A WebdriverIO reporter plugin to report results to Report Portal(http://reportportal.io/).
 
 ## Installation
 The easiest way is to keep `wdio-reportportal-reporter` and `wdio-reportportal-service` as a devDependency in your `package.json`.
 ```json
 {
   "devDependencies": {
-    "wdio-reportportal-reporter": "^6.4.0",
+    "wdio-reportportal-reporter": "^6.5.0",
     "wdio-reportportal-service": "^6.4.0"
   }
 }
