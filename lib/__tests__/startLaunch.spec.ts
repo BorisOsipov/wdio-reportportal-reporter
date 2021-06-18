@@ -4,7 +4,7 @@ import {getDefaultOptions, RPClientMock} from "./reportportal-client.mock";
 
 const Reporter = require("../../build/reporter");
 const REAL_LAUNCH_ID = "FOO_ID";
-const runnerStat = {specs: ["foo"], config: {framework: "mocha"}};
+const runnerStat = {specs: ["foo"], config: {framework: "mocha"}, retry: 0};
 
 describe("startLaunch", () => {
   afterEach(() => {
@@ -59,6 +59,37 @@ describe("startLaunch", () => {
       mode: options.reportPortalClientConfig.mode,
       rerun: false,
       rerunOf: null,
+    };
+    expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
+  });
+
+  test("should start rerun launch for suite retry", () => {
+    const options = getDefaultOptions();
+    const reporter = new Reporter(options);
+    process.env.RP_LAUNCH_ID = REAL_LAUNCH_ID;
+
+    const mock = () =>  {
+      const rpClientMock = new RPClientMock();
+      rpClientMock.startLaunch = jest.fn().mockReturnValue({
+        promise: Promise.resolve("ok"),
+        tempId: "startRerunLaunch",
+      });
+      return rpClientMock
+    };
+    jest.spyOn(reporter, 'getReportPortalClient').mockImplementation(mock);
+    runnerStat.retry = 1;
+    reporter.onRunnerStart(runnerStat);
+
+    expect(reporter.tempLaunchId).toEqual("startRerunLaunch");
+    expect(reporter.launchId).toEqual(REAL_LAUNCH_ID);
+    expect(reporter.client.startLaunch).toBeCalledTimes(1);
+
+    const launchObj = {
+      attributes: options.reportPortalClientConfig.attributes,
+      description: options.reportPortalClientConfig.description,
+      mode: options.reportPortalClientConfig.mode,
+      rerun: true,
+      rerunOf: REAL_LAUNCH_ID,
     };
     expect(reporter.client.startLaunch).toBeCalledWith(launchObj);
   });
