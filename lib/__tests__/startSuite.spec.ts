@@ -58,7 +58,7 @@ describe("startSuite", () => {
   });
 
   test("should support cucumber nested steps", () => {
-    Object.assign(reporter.options, {cucumberNestedSteps: true});
+    Object.assign(reporter.reporterOptions, {cucumberNestedSteps: true});
     reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.FEATURE}));
     reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.SCENARIO}));
 
@@ -87,7 +87,7 @@ describe("startSuite", () => {
   });
 
   test("should add attribute with feature name to scenario", () => {
-    Object.assign(reporter.options, {cucumberNestedSteps: true, autoAttachCucumberFeatureToScenario: true});
+    Object.assign(reporter.reporterOptions, {cucumberNestedSteps: true, autoAttachCucumberFeatureToScenario: true});
     reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.FEATURE, title: "foo"}));
     reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.SCENARIO}));
 
@@ -112,7 +112,7 @@ describe("startSuite", () => {
       enabled: true,
       sldc: "foo"
     }
-    Object.assign(reporter.options, {cucumberNestedSteps: true, sauceLabOptions});
+    Object.assign(reporter.reporterOptions, {cucumberNestedSteps: true, sauceLabOptions});
     reporter.sessionId = "bar";
     reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.FEATURE}));
     reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.SCENARIO}));

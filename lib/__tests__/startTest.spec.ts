@@ -19,7 +19,7 @@ describe("startSuite", () => {
       enabled: true,
       sldc: "foo"
     }
-    Object.assign(reporter.options, {cucumberNestedSteps: true, sauceLabOptions});
+    Object.assign(reporter.reporterOptions, {cucumberNestedSteps: true, sauceLabOptions});
     reporter.sessionId = "bar";
 
     reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.FEATURE}));
@@ -47,7 +47,7 @@ describe("startSuite", () => {
       enabled: true,
       sldc: "foo"
     }
-    Object.assign(reporter.options, {sauceLabOptions});
+    Object.assign(reporter.reporterOptions, {sauceLabOptions});
     reporter.sessionId = "bar";
 
     reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.FEATURE}));

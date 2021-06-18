@@ -49,5 +49,5 @@ export class RPClientMock {
 }
 
 export const getDefaultOptions = (options?: any): ReporterOptions => {
-  return Object.assign(new ReporterOptions(), options);
+  return Object.assign(new ReporterOptions(), options, { logFile: "/dev/null" });
 };

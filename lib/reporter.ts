@@ -79,8 +79,7 @@ class ReportPortalReporter extends Reporter {
   private client: ReportPortalClient;
   private storage = new Storage();
   private tempLaunchId: string;
-  // @ts-ignore temporary until wdio typings make stable
-  private readonly options: ReporterOptions;
+  private readonly reporterOptions: ReporterOptions;
   private isMultiremote: boolean;
   private isCucumberFramework: boolean;
   private sanitizedCapabilities: string;
@@ -92,11 +91,11 @@ class ReportPortalReporter extends Reporter {
   private currentTestAttributes: Attribute[] = [];
 
   constructor(options: any) {
-    super(Object.assign({stdout: true}, options));
-    this.options = Object.assign(new ReporterOptions(), options);
+    super(options);
+    this.reporterOptions = Object.assign(new ReporterOptions(), options);
     this.registerListeners();
 
-    if (this.options.cucumberNestedSteps) {
+    if (this.reporterOptions.cucumberNestedSteps) {
       this.featureStatus = STATUS.PASSED;
     }
   }
@@ -106,16 +105,16 @@ class ReportPortalReporter extends Reporter {
 
     const isCucumberFeature = suite.type === CUCUMBER_TYPE.FEATURE;
     const isCucumberScenario = suite.type === CUCUMBER_TYPE.SCENARIO;
-    const suiteStartObj = this.options.cucumberNestedSteps ?
+    const suiteStartObj = this.reporterOptions.cucumberNestedSteps ?
       new StartTestItem(suite.title, isCucumberFeature ? TYPE.TEST : TYPE.STEP) :
       new StartTestItem(suite.title, TYPE.SUITE);
     if (isCucumberFeature) {
-      addSauceLabAttributes(this.options, suiteStartObj, this.sessionId);
+      addSauceLabAttributes(this.reporterOptions, suiteStartObj, this.sessionId);
     }
     if (isCucumberScenario) {
       suiteStartObj.codeRef = getRelativePath(this.specFilePath) + ':' + suite.uid.replace(suite.title, '').trim();
     }
-    if (this.options.cucumberNestedSteps && this.options.autoAttachCucumberFeatureToScenario) {
+    if (this.reporterOptions.cucumberNestedSteps && this.reporterOptions.autoAttachCucumberFeatureToScenario) {
       switch (suite.type) {
         case CUCUMBER_TYPE.FEATURE:
           this.featureName = suite.title;
@@ -127,7 +126,7 @@ class ReportPortalReporter extends Reporter {
               value: this.featureName,
             },
           ];
-          if (this.options.setRetryTrue) {
+          if (this.reporterOptions.setRetryTrue) {
             suiteStartObj.retry = true;
           }
           break;
@@ -138,7 +137,7 @@ class ReportPortalReporter extends Reporter {
     if (suiteItem !== null) {
       parentId = suiteItem.id;
     }
-    if (this.options.parseTagsFromTestTitle) {
+    if (this.reporterOptions.parseTagsFromTestTitle) {
       suiteStartObj.addTags();
     }
     suiteStartObj.description = this.sanitizedCapabilities;
@@ -156,7 +155,7 @@ class ReportPortalReporter extends Reporter {
 
     const isSomeTestFailed = suite.tests.some(({ state }) => state === WDIO_TEST_STATUS.FAILED);
     let suiteStatus = isSomeTestFailed ? STATUS.FAILED : STATUS.PASSED;
-    if (this.options.cucumberNestedSteps) {
+    if (this.reporterOptions.cucumberNestedSteps) {
       switch (suite.type) {
         case CUCUMBER_TYPE.SCENARIO:
           const scenarioStepsAllPassed = suite.tests.every(({state}) => state === WDIO_TEST_STATUS.PASSED);
@@ -189,15 +188,15 @@ class ReportPortalReporter extends Reporter {
     } else {
       addCodeRef(this.specFilePath, test.fullTitle, testStartObj)
     }
-    if (this.options.cucumberNestedSteps) {
+    if (this.reporterOptions.cucumberNestedSteps) {
       testStartObj.hasStats = false;
     } else {
-      addSauceLabAttributes(this.options, testStartObj, this.sessionId);
+      addSauceLabAttributes(this.reporterOptions, testStartObj, this.sessionId);
     }
-    if (this.options.parseTagsFromTestTitle) {
+    if (this.reporterOptions.parseTagsFromTestTitle) {
       testStartObj.addTags();
     }
-    if (this.options.setRetryTrue) {
+    if (this.reporterOptions.setRetryTrue) {
       testStartObj.retry = true;
     }
     addBrowserParam(this.sanitizedCapabilities, testStartObj);
@@ -270,10 +269,10 @@ class ReportPortalReporter extends Reporter {
     this.launchId = process.env.RP_LAUNCH_ID;
     this.specFilePath = runner.specs[0] || "";
     const startLaunchObj = {
-      attributes: this.options.reportPortalClientConfig.attributes,
-      description: this.options.reportPortalClientConfig.description,
+      attributes: this.reporterOptions.reportPortalClientConfig.attributes,
+      description: this.reporterOptions.reportPortalClientConfig.description,
       id: this.launchId,
-      mode: this.options.reportPortalClientConfig.mode,
+      mode: this.reporterOptions.reportPortalClientConfig.mode,
       rerun: false,
       rerunOf: null,
     };
@@ -289,7 +288,7 @@ class ReportPortalReporter extends Reporter {
     }
   }
 
-  async onRunnerEnd() {
+  async onRunnerEnd(runnerStats) {
     log.debug(`Runner end`);
     try {
       return await this.client.getPromiseFinishAllItems(this.tempLaunchId);
@@ -303,16 +302,16 @@ class ReportPortalReporter extends Reporter {
   }
 
   onBeforeCommand(command) {
-    if (!this.options.reportSeleniumCommands || this.isMultiremote) {
+    if (!this.reporterOptions.reportSeleniumCommands || this.isMultiremote) {
       return;
     }
 
     const method = `${command.method} ${command.endpoint}`;
     if (!isEmpty(command.body)) {
       const data = JSON.stringify(limit(command.body));
-      this.sendLog({message: `${method} ${data}`, level: this.options.seleniumCommandsLogLevel});
+      this.sendLog({message: `${method} ${data}`, level: this.reporterOptions.seleniumCommandsLogLevel});
     } else {
-      this.sendLog({message: `${method}`, level: this.options.seleniumCommandsLogLevel});
+      this.sendLog({message: `${method}`, level: this.reporterOptions.seleniumCommandsLogLevel});
     }
   }
 
@@ -321,7 +320,7 @@ class ReportPortalReporter extends Reporter {
       return;
     }
     const isScreenshot = isScreenshotCommand(command) && command.result.value;
-    const {autoAttachScreenshots, screenshotsLogLevel, seleniumCommandsLogLevel, reportSeleniumCommands} = this.options;
+    const {autoAttachScreenshots, screenshotsLogLevel, seleniumCommandsLogLevel, reportSeleniumCommands} = this.reporterOptions;
     if (isScreenshot) {
       if (autoAttachScreenshots) {
         const obj = {
@@ -359,7 +358,7 @@ class ReportPortalReporter extends Reporter {
   }
 
   private getReportPortalClient(): ReportPortalClient{
-    return new ReportPortalClient(this.options.reportPortalClientConfig);
+    return new ReportPortalClient(this.reporterOptions.reportPortalClientConfig);
   }
 
   private addAttribute(attribute: Attribute) {
