@@ -108,17 +108,6 @@ describe("#isScreenshotCommand", () => {
 describe("#addSauceLabAttributes", () => {
   const sessionId = "sessionId";
 
-  test("can use old config param isSauseLabRun", () => {
-    const testItem = new StartTestItem("name", TYPE.STEP);
-    const reporterOptions = getDefaultOptions();
-    Object.assign(reporterOptions, {isSauseLabRun: true})
-
-    addSauceLabAttributes(reporterOptions, testItem, sessionId)
-
-    expect(testItem.attributes.length).toEqual(1)
-    expect(testItem.attributes).toEqual([{key: "SLID", value: sessionId}])
-  });
-
   test("can use new config param sauceLabOptions", () => {
     const testItem = new StartTestItem("name", TYPE.STEP);
     const sauceLabOptions = {

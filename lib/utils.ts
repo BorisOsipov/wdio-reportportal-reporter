@@ -85,14 +85,7 @@ export const addBrowserParam = (browser: string, testItem: StartTestItem) => {
 };
 
 export const addSauceLabAttributes = (options: ReporterOptions, testItem: StartTestItem, sessionId: string) => {
-  const {sauceLabOptions, isSauseLabRun} = options;
-
-  if (isSauseLabRun) {
-    // tslint:disable-next-line:no-console
-    console.warn("Report portal reporter option 'isSauseLabRun' is deprecated and will be removed. Use a new config.sauceLabOptions reporter option to control integration.")
-    testItem.addSLID(sessionId);
-    return
-  }
+  const {sauceLabOptions} = options;
 
   if (sauceLabOptions?.enabled) {
     testItem.addSLID(sessionId);

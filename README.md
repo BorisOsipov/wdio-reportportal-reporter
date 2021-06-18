@@ -42,7 +42,6 @@ const conf = {
   parseTagsFromTestTitle: false, // parse strings like `@foo` from titles and add to Report Portal
   cucumberNestedSteps: false, // report cucumber steps as Report Portal steps
   autoAttachCucumberFeatureToScenario: false, // requires cucumberNestedSteps to be true for use
-  isSauseLabRun: false, // automatically add SauseLab ID to rp tags. Deprecated and will be removed. Use sauceLabOptions instead
   sauceLabOptions : {
     enabled: true, // automatically add SauseLab ID to rp tags.
     sldc: "US" // automatically add SauseLab region to rp tags.
