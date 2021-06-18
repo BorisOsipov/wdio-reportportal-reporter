@@ -403,7 +403,7 @@ class ReportPortalReporter extends Reporter {
       return;
     }
 
-    const {promise} = this.client.sendLog(testItem.id, {level}, {name, content, type, message});
+    const {promise} = this.client.sendLog(testItem.id, {level , message}, {name, content, type, message});
     promiseErrorHandler(promise);
   }
 
