@@ -35,9 +35,9 @@
   "dependencies": {
     "json-stringify-safe": "~5.0.1",
     "validator": "^13.1.17",
-    "@wdio/reporter": "^7.7.3",
+    "@wdio/reporter": "^7.7.5",
     "@wdio/logger": "^7.7.0",
-    "reportportal-js-client": "^2.1.2"
+    "reportportal-js-client": "^2.2.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",
