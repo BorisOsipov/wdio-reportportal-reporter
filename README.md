@@ -34,7 +34,7 @@ const conf = {
     description: "Launch description text",
     attributes: [{key:"tag", value: "foo"}],
     headers: {"foo": "bar"}, // optional headers for internal http client
-    restClientConfig: { // axios like http client [config](https://github.com/axios/axios#request-config)
+    restClientConfig: { // axios like http client config - https://github.com/axios/axios#request-config
       proxy: {
         protocol: 'https',
         host: '127.0.0.1',
