@@ -20,6 +20,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
       - name: Install Dependencies
-        run: npm build
+        run: npm run build
       - name: Lint / Dependencies / Unit Tests
         run: npm run test
