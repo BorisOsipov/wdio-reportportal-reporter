@@ -54,6 +54,7 @@ const conf = {
   parseTagsFromTestTitle: false, // parse strings like `@foo` from titles and add to Report Portal
   cucumberNestedSteps: false, // report cucumber steps as Report Portal steps
   autoAttachCucumberFeatureToScenario: false, // requires cucumberNestedSteps to be true for use
+  sanitizeErrorMessages: true, // strip color ascii characters from error stacktrace
   sauceLabOptions : {
     enabled: true, // automatically add SauseLab ID to rp tags.
     sldc: "US" // automatically add SauseLab region to rp tags.
@@ -67,9 +68,6 @@ exports.config = {
   // ...
 };
 ```
-
-# Complete guide with a project sample demonstrating integration of WebdriverIO with Report Portal
-See readme in [wdio-rp-integration-demoC](https://github.com/iAutomator/wdio-rp-integration-demo)
 
 # Additional API
 
