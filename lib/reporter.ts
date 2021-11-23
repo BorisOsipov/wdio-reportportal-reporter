@@ -12,6 +12,7 @@ import {
   addCodeRef,
   addCodeRefCucumber,
   addSauceLabAttributes,
+  ansiRegex,
   getRelativePath,
   isEmpty,
   isScreenshotCommand,
@@ -243,7 +244,9 @@ class ReportPortalReporter extends Reporter {
     }
     const finishTestObj = new EndTestItem(status, issue);
     if (status === STATUS.FAILED) {
-      const message = `${test.error.stack} `;
+      const stacktrace = test.error.stack;
+      const message = this.reporterOptions.sanitizeErrorMessages ?
+        stacktrace.replace(ansiRegex(), '') : `${stacktrace}`;
       finishTestObj.description = `❌ ${message}`;
       this.client.sendLog(testItem.id, {
         level: LEVEL.ERROR,
