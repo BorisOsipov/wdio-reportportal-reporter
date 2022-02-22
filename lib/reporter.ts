@@ -160,8 +160,8 @@ class ReportPortalReporter extends Reporter {
       switch (suite.type) {
         case CUCUMBER_TYPE.SCENARIO:
           const scenarioStepsAllPassed = suite.tests.every(({state}) => state === WDIO_TEST_STATUS.PASSED);
-          const scenarioStepsAllSkipped = suite.tests.every(({ state }) => state === WDIO_TEST_STATUS.SKIPPED);
-          suiteStatus = scenarioStepsAllPassed ? STATUS.PASSED : scenarioStepsAllSkipped ? STATUS.SKIPPED : STATUS.FAILED;
+          const scenarioStepsSkipped = isSomeTestFailed ? false : suite.tests.some(({ state }) => state === WDIO_TEST_STATUS.SKIPPED);
+          suiteStatus = scenarioStepsAllPassed ? STATUS.PASSED : scenarioStepsSkipped ? STATUS.SKIPPED : STATUS.FAILED;
           this.featureStatus = this.featureStatus === STATUS.PASSED && suiteStatus === STATUS.PASSED ? STATUS.PASSED : STATUS.FAILED;
           break;
         case CUCUMBER_TYPE.FEATURE:
@@ -171,7 +171,7 @@ class ReportPortalReporter extends Reporter {
     }
 
     const suiteItem = this.storage.getCurrentSuite();
-    const finishSuiteObj = {status: suiteStatus};
+    const finishSuiteObj = suiteStatus === STATUS.SKIPPED ? new EndTestItem(STATUS.SKIPPED, new Issue("NOT_ISSUE")) : {status: suiteStatus};
     const {promise} = this.client.finishTestItem(suiteItem.id, finishSuiteObj);
     promiseErrorHandler(promise);
     this.storage.removeSuite();
