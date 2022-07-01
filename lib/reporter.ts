@@ -103,7 +103,7 @@ class ReportPortalReporter extends Reporter {
 
   onSuiteStart(suite) {
     log.debug(`Start suite ${suite.title} ${suite.uid}`);
-
+    this.specFilePath = suite.file || "";
     const isCucumberFeature = suite.type === CUCUMBER_TYPE.FEATURE;
     const isCucumberScenario = suite.type === CUCUMBER_TYPE.SCENARIO;
     const suiteStartObj = this.reporterOptions.cucumberNestedSteps ?
@@ -113,7 +113,7 @@ class ReportPortalReporter extends Reporter {
       addSauceLabAttributes(this.reporterOptions, suiteStartObj, this.sessionId);
     }
     if (isCucumberScenario) {
-      suiteStartObj.codeRef = getRelativePath(this.specFilePath) + ':' + suite.uid.replace(suite.title, '').trim();
+      suiteStartObj.codeRef = getRelativePath(this.\) + ':' + suite.uid.replace(suite.title, '').trim();
     }
     if (this.reporterOptions.cucumberNestedSteps && this.reporterOptions.autoAttachCucumberFeatureToScenario) {
       switch (suite.type) {
@@ -270,7 +270,7 @@ class ReportPortalReporter extends Reporter {
     this.isCucumberFramework = runner.config.framework === 'cucumber'
     this.client = this.getReportPortalClient();
     this.launchId = process.env.RP_LAUNCH_ID;
-    this.specFilePath = runner.specs[0] || "";
+    
     const startLaunchObj = {
       attributes: this.reporterOptions.reportPortalClientConfig.attributes,
       description: this.reporterOptions.reportPortalClientConfig.description,
