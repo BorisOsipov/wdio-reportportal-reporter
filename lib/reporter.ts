@@ -103,7 +103,7 @@ class ReportPortalReporter extends Reporter {
 
   onSuiteStart(suite) {
     log.debug(`Start suite ${suite.title} ${suite.uid}`);
-    this.specFilePath = suite.file || "";
+    this.specFilePath = suite.file ? suite.file : this.specFilePath;
     const isCucumberFeature = suite.type === CUCUMBER_TYPE.FEATURE;
     const isCucumberScenario = suite.type === CUCUMBER_TYPE.SCENARIO;
     const suiteStartObj = this.reporterOptions.cucumberNestedSteps ?
@@ -270,6 +270,7 @@ class ReportPortalReporter extends Reporter {
     this.isCucumberFramework = runner.config.framework === 'cucumber'
     this.client = this.getReportPortalClient();
     this.launchId = process.env.RP_LAUNCH_ID;
+    this.specFilePath = runner.specs[0] || "";
     const startLaunchObj = {
       attributes: this.reporterOptions.reportPortalClientConfig.attributes,
       description: this.reporterOptions.reportPortalClientConfig.description,
