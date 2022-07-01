@@ -270,7 +270,6 @@ class ReportPortalReporter extends Reporter {
     this.isCucumberFramework = runner.config.framework === 'cucumber'
     this.client = this.getReportPortalClient();
     this.launchId = process.env.RP_LAUNCH_ID;
-    
     const startLaunchObj = {
       attributes: this.reporterOptions.reportPortalClientConfig.attributes,
       description: this.reporterOptions.reportPortalClientConfig.description,
