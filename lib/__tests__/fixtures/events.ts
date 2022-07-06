@@ -4,7 +4,8 @@ export const suiteStartEvent = () => ({
   uid: "FooBarSuite",
   cid: "0-0",
   title: "foo",
-  runner: {"0-0": {}}
+  runner: {"0-0": {}},
+  file: "C:/work/home/spec.ts"
 });
 
 export const suiteEndEvent = () => ({
