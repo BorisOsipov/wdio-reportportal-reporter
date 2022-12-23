@@ -53,7 +53,7 @@ class ReportPortalReporter extends Reporter {
     sendToReporter(EVENTS.RP_TEST_RETRY, {test});
   }
 
-  public static addAttribute(attribute: Attribute) {
+  private static getValidatedAttribute(attribute: Attribute): Attribute {
     if (!attribute) {
       throw new Error("Attribute should be an object")
     }
@@ -72,7 +72,15 @@ class ReportPortalReporter extends Reporter {
         throw Error("Attribute key should not be an empty string")
       }
     }
-    sendToReporter(EVENTS.RP_TEST_ATTRIBUTES, {...clonedAttribute});
+    return clonedAttribute
+  }
+
+  public static addAttribute(attribute: Attribute) {
+    sendToReporter(EVENTS.RP_TEST_ATTRIBUTES, {...this.getValidatedAttribute(attribute)});
+  }
+
+  public static addAttributeToSuite(attribute: Attribute) {
+    sendToReporter(EVENTS.RP_SUITE_ATTRIBUTES, {...this.getValidatedAttribute(attribute)});
   }
 
   private static reporterName = "reportportal";
@@ -90,6 +98,7 @@ class ReportPortalReporter extends Reporter {
   private featureStatus: STATUS;
   private featureName: string;
   private currentTestAttributes: Attribute[] = [];
+  private currentSuiteAttributes: Attribute[] = []
 
   constructor(options: any) {
     super(options);
@@ -171,7 +180,8 @@ class ReportPortalReporter extends Reporter {
     }
 
     const suiteItem = this.storage.getCurrentSuite();
-    const finishSuiteObj = suiteStatus === STATUS.SKIPPED ? new EndTestItem(STATUS.SKIPPED, new Issue("NOT_ISSUE")) : {status: suiteStatus};
+    const finishSuiteObj = suiteStatus === STATUS.SKIPPED ? new EndTestItem(STATUS.SKIPPED, new Issue("NOT_ISSUE")) : {status: suiteStatus, attributes: this.currentSuiteAttributes};
+
     const {promise} = this.client.finishTestItem(suiteItem.id, finishSuiteObj);
     promiseErrorHandler(promise);
     this.storage.removeSuite();
@@ -367,6 +377,10 @@ class ReportPortalReporter extends Reporter {
     this.currentTestAttributes.push({...attribute})
   }
 
+  private addAttributeToSuite(attribute: Attribute){
+    this.currentSuiteAttributes.push(attribute)
+  }
+
   private finishTestManually(event: any) {
     const testItem = this.storage.getCurrentTest();
     if (testItem === null) {
@@ -463,6 +477,7 @@ class ReportPortalReporter extends Reporter {
     process.on(EVENTS.RP_TEST_FILE, this.sendFileToTest.bind(this));
     process.on(EVENTS.RP_TEST_RETRY, this.finishTestManually.bind(this));
     process.on(EVENTS.RP_TEST_ATTRIBUTES, this.addAttribute.bind(this));
+    process.on(EVENTS.RP_SUITE_ATTRIBUTES, this.addAttributeToSuite.bind(this));
   }
 
   private now() {

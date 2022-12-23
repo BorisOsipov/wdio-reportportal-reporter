@@ -1,13 +1,16 @@
 WDIO Report Portal Reporter
 ====================
+
 [![Greenkeeper badge](https://badges.greenkeeper.io/BorisOsipov/wdio-reportportal-reporter.svg)](https://greenkeeper.io/)
 
 ![npm](https://img.shields.io/npm/v/wdio-reportportal-reporter)
 ![npm](https://img.shields.io/npm/dm/wdio-reportportal-reporter)
-> A WebdriverIO reporter plugin to report results to Report Portal(http://reportportal.io/).
+> A WebdriverIO reporter plugin to report results to Report Portal(<http://reportportal.io/>).
 
 ## Installation
+
 The easiest way is to keep `wdio-reportportal-reporter` and `wdio-reportportal-service` as a devDependency in your `package.json`.
+
 ```json
 {
   "devDependencies": {
@@ -16,9 +19,13 @@ The easiest way is to keep `wdio-reportportal-reporter` and `wdio-reportportal-s
   }
 }
 ```
+
 Instructions on how to install `WebdriverIO` can be found [here](https://webdriver.io/docs/gettingstarted.html).
+
 ## Configuration
+
 Configure the output directory in your wdio.conf.js file:
+
 ```js
 const reportportal = require('wdio-reportportal-reporter');
 const RpService = require("wdio-reportportal-service");
@@ -72,40 +79,46 @@ exports.config = {
 # Additional API
 
 Api methods can be accessed using:
+
 ```js
 const reporter = require('wdio-reportportal-reporter')
 ```
+
 ### Methods description
-* `reporter.addAttribute({key, value}) ` – add an attribute to current test.
+
+* `reporter.addAttribute({key, value})` – add an attribute to current test.
   * `key` (*string*, optional) -  attribute key. It must be non-empty string.
   * `value` (*string*, required)–  attribute value. It must be non-empty string.
-* `reporter.sendLog(level, message) ` – send log to current suite\test item.
-    * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
-    * `message` (*string*)– log message content.
+* `reporter.addAttributeToCurrentSuite({key, value})` - add an attribute to current suite.
+  * `key` (*string*, optional) -  attribute key. It must be non-empty string.
+  * `value` (*string*, required)–  attribute value. It must be non-empty string.
+* `reporter.sendLog(level, message)` – send log to current suite\test item.
+  * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
+  * `message` (*string*)– log message content.
 * `reporter.sendFile(level, name, content, [type])` – send file to current suite\test item.
-    * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
-    * `name` (*string*)– file name.
-    * `content` (*string*) – attachment content
-    * `type` (*string*, optional) – attachment MIME-type, `image/png` by default
-    * `message` (*string*)– log message content.
+  * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
+  * `name` (*string*)– file name.
+  * `content` (*string*) – attachment content
+  * `type` (*string*, optional) – attachment MIME-type, `image/png` by default
+  * `message` (*string*)– log message content.
 * `reporter.sendLogToTest(test, level, message)` - send log to specific test.
-    * `test` (*object*) - test object from `afterTest\afterStep` wdio hook
-    * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
-    * `message` (*string*)– log message content.
+  * `test` (*object*) - test object from `afterTest\afterStep` wdio hook
+  * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
+  * `message` (*string*)– log message content.
 * `reporter.sendFileToTest(test, level, name, content, [type])` – send file to to specific test.
-    * `test` (*object*) - test object from `afterTest\afterStep` wdio hook
-    * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
-    * `name` (*string*)– file name.
-    * `content` (*string*) – attachment content
-    * `type` (*string*, optional) – attachment MIME-type, `image/png` by default
-    * `message` (*string*)– log message content.
-
+  * `test` (*object*) - test object from `afterTest\afterStep` wdio hook
+  * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
+  * `name` (*string*)– file name.
+  * `content` (*string*) – attachment content
+  * `type` (*string*, optional) – attachment MIME-type, `image/png` by default
+  * `message` (*string*)– log message content.
 
 Pay attention: `sendLog`\\`sendFile` sends log to **current running test item**. It means if you send log without active test(e.g from hooks or on suite level) it will not be reported Report Portal UI.
 
 Methods `sendLogToTest`\\`sendFileToTest` are useful when you need to send screenshots or logs to the failed test item from wdio afterTest hook.
 
 Mocha example:
+
 ```js
 const reportportal = require('wdio-reportportal-reporter');
 const path = require('path');
@@ -125,6 +138,7 @@ exports.config = {
 ```
 
 Jasmine example:
+
 ```js
 const reportportal = require('wdio-reportportal-reporter');
 const path = require('path');
@@ -146,6 +160,7 @@ exports.config = {
 ```
 
 WDIO Cucumber "5.14.3+" Example:
+
 ```js
 const reportportal = require('wdio-reportportal-reporter');
 
@@ -167,6 +182,7 @@ exports.config = {
 ```
 
 ## Getting link to Report Portal UI launch page
+
 ```js
 const RpService = require("wdio-reportportal-service");
 ...
@@ -176,6 +192,7 @@ const RpService = require("wdio-reportportal-service");
     }
 ...
 ```
+
 or more complicated way
 
 ```js
@@ -197,8 +214,8 @@ If you want report test to existing active launch you may pass it to reporter by
 You are responsible for finishing launch as well as starting such launch.
 
 ```sh
-$ export REPORT_PORTAL_LAUNCH_ID=SomeLaunchId
-$ npm run wdio
+export REPORT_PORTAL_LAUNCH_ID=SomeLaunchId
+npm run wdio
 ```
 
 ## License
