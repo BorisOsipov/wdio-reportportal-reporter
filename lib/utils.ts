@@ -101,6 +101,7 @@ export const addDescription = (description: string, testItem: StartTestItem) => 
   }
 };
 
+
 export const parseTags = (text: string): string[] => ("" + text).match(TAGS_PATTERN) || [];
 
 export const isScreenshotCommand = (command: any) => {
