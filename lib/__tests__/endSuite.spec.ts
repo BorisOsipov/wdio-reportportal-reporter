@@ -1,5 +1,6 @@
 import {WDIO_TEST_STATUS, CUCUMBER_TYPE, STATUS} from "../constants";
 import {suiteEndEvent, suiteStartEvent} from "./fixtures/events";
+import {singleAttribute} from "./fixtures/attributes"
 import {getDefaultOptions, RPClientMock} from "./reportportal-client.mock";
 
 const Reporter = require("../../build/reporter");
@@ -21,9 +22,33 @@ describe("endSuite", () => {
     expect(reporter.client.finishTestItem).toBeCalledTimes(1);
     expect(reporter.client.finishTestItem).toBeCalledWith(
       id,
-      {status: STATUS.PASSED},
+      {
+        status: STATUS.PASSED,
+        attributes: []
+      },
+
     );
   });
+
+
+
+  test("should set given attributes to endSuite", () => {
+    const {id} = reporter.storage.getCurrentSuite();
+    reporter.addAttributeToSuite(singleAttribute)
+    reporter.onSuiteEnd(suiteEndEvent());
+
+    expect(reporter.client.finishTestItem).toBeCalledTimes(1);
+    expect(reporter.client.finishTestItem).toBeCalledWith(
+      id,
+      {
+        status: STATUS.PASSED,
+        attributes: [
+        singleAttribute
+      ]
+      },
+
+    );
+  })
 
 
   test("should set status as failing if there are failed tests", () => {
@@ -43,7 +68,34 @@ describe("endSuite", () => {
 
     expect(reporter.client.finishTestItem).toBeCalledWith(
       id,
-      {status: STATUS.FAILED},
+      {
+        status: STATUS.FAILED,
+        attributes: []
+      },
+    );
+  });
+
+  test("should set status as passed if all tests passed", () => {
+    const {id} = reporter.storage.getCurrentSuite();
+    reporter.onSuiteEnd(Object.assign(
+      suiteEndEvent(),
+      {
+        tests: [
+          {
+            state: WDIO_TEST_STATUS.PASSED,
+          },
+          {
+            state: WDIO_TEST_STATUS.PASSED,
+          },
+        ]
+      }));
+
+    expect(reporter.client.finishTestItem).toBeCalledWith(
+      id,
+      {
+        status: STATUS.PASSED,
+        attributes: []
+      },
     );
   });
 
@@ -66,7 +118,10 @@ describe("endSuite", () => {
 
     expect(reporter.client.finishTestItem).toBeCalledWith(
       id,
-      {status: STATUS.PASSED},
+      {
+        status: STATUS.PASSED,
+        attributes: []
+      },
     );
   });
 
@@ -89,7 +144,10 @@ describe("endSuite", () => {
 
     expect(reporter.client.finishTestItem).toBeCalledWith(
       id,
-      {status: STATUS.FAILED},
+      {
+        status: STATUS.FAILED,
+        attributes: []
+      },
     );
   });
 });
