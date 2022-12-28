@@ -24,8 +24,10 @@ describe("endSuite", () => {
       id,
       {
         status: STATUS.PASSED,
-        attributes: []
+        attributes: [],
+        description: ""
       },
+
 
     );
   });
@@ -43,8 +45,25 @@ describe("endSuite", () => {
       {
         status: STATUS.PASSED,
         attributes: [
-        singleAttribute
-      ]
+          singleAttribute
+        ],
+        description: ""
+      },
+
+    );
+  })
+
+  test("should set given description", () => {
+    const {id} = reporter.storage.getCurrentSuite();
+    reporter.addDescriptionToCurrentSuite('new description')
+    reporter.onSuiteEnd(suiteEndEvent());
+    expect(reporter.client.finishTestItem).toBeCalledTimes(1);
+    expect(reporter.client.finishTestItem).toBeCalledWith(
+      id,
+      {
+        status: STATUS.PASSED,
+        attributes: [],
+        description: "new description"
       },
 
     );
@@ -70,7 +89,8 @@ describe("endSuite", () => {
       id,
       {
         status: STATUS.FAILED,
-        attributes: []
+        attributes: [],
+        description: ""
       },
     );
   });
@@ -94,7 +114,8 @@ describe("endSuite", () => {
       id,
       {
         status: STATUS.PASSED,
-        attributes: []
+        attributes: [],
+        description: ""
       },
     );
   });
@@ -120,7 +141,8 @@ describe("endSuite", () => {
       id,
       {
         status: STATUS.PASSED,
-        attributes: []
+        attributes: [],
+        description: ""
       },
     );
   });
@@ -146,7 +168,8 @@ describe("endSuite", () => {
       id,
       {
         status: STATUS.FAILED,
-        attributes: []
+        attributes: [],
+        description: ""
       },
     );
   });
