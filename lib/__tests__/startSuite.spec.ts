@@ -19,7 +19,7 @@ describe("startSuite", () => {
 
     expect(reporter.client.startTestItem).toBeCalledTimes(1);
     expect(reporter.client.startTestItem).toBeCalledWith(
-      {description: undefined, attributes: [], name: "foo", type: TYPE.SUITE, retry: false},
+      {description: "", attributes: [], name: "foo", type: TYPE.SUITE, retry: false},
       reporter.tempLaunchId,
       null,
     );
@@ -30,7 +30,7 @@ describe("startSuite", () => {
 
     expect(reporter.client.startTestItem).toBeCalledTimes(1);
     expect(reporter.client.startTestItem).toBeCalledWith(
-      {description: undefined, attributes: [], name: "foo", type: TYPE.SUITE, retry: false},
+      {description: "", attributes: [], name: "foo", type: TYPE.SUITE, retry: false},
       reporter.tempLaunchId,
       null,
     );
@@ -43,7 +43,7 @@ describe("startSuite", () => {
     expect(reporter.client.startTestItem).toBeCalledTimes(2);
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       1,
-      {description: undefined, attributes: [], name: "foo", type: TYPE.SUITE, retry: false},
+      {description: "", attributes: [], name: "foo", type: TYPE.SUITE, retry: false},
       reporter.tempLaunchId,
       null,
     );
@@ -51,7 +51,7 @@ describe("startSuite", () => {
     const {id} = reporter.storage.getCurrentSuite();
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       2,
-      {description: undefined, attributes: [], name: "foo", type: TYPE.SUITE, retry: false},
+      {description: "", attributes: [], name: "foo", type: TYPE.SUITE, retry: false},
       reporter.tempLaunchId,
       id,
     );
@@ -65,7 +65,7 @@ describe("startSuite", () => {
     expect(reporter.client.startTestItem).toBeCalledTimes(2);
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       1,
-      {description: undefined, attributes: [], name: "foo", type: TYPE.TEST, retry: false},
+      {description: "", attributes: [], name: "foo", type: TYPE.TEST, retry: false},
       reporter.tempLaunchId,
       null,
     );
@@ -74,7 +74,7 @@ describe("startSuite", () => {
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       2,
       {
-        description: undefined,
+        description: "",
         attributes: [],
         name: "foo",
         type: TYPE.STEP,
@@ -100,12 +100,48 @@ describe("startSuite", () => {
         type: TYPE.STEP,
         retry: false,
         attributes: [{key: CUCUMBER_TYPE.FEATURE, value: "foo"}],
-        codeRef: "C:/work/home/spec.ts:FooBarSuite"
+        codeRef: "C:/work/home/spec.ts:FooBarSuite",
+        description: ""
       },
       reporter.tempLaunchId,
       id,
     );
   });
+
+  test("should set description for current suite", () => {
+
+    reporter.addDescriptionToCurrentSuite('new description')
+    reporter.onSuiteStart(suiteStartEvent());
+
+    expect(reporter.client.startTestItem).toBeCalledTimes(1);
+    expect(reporter.client.startTestItem).toBeCalledWith(
+      {description: "new description", attributes: [], name: "foo", type: TYPE.SUITE, retry: false},
+      reporter.tempLaunchId,
+      null,
+    );
+  })
+
+  test("should set description for all suite", () => {
+
+    reporter.addDescriptionToAllSuites('new description')
+    reporter.onSuiteStart(suiteStartEvent());
+
+    expect(reporter.client.startTestItem).toBeCalledTimes(1);
+    expect(reporter.client.startTestItem).toBeCalledWith(
+      {description: "new description", attributes: [], name: "foo", type: TYPE.SUITE, retry: false},
+      reporter.tempLaunchId,
+      null,
+    );
+
+    reporter.onSuiteStart(suiteStartEvent());
+
+    expect(reporter.client.startTestItem).toBeCalledTimes(2);
+    expect(reporter.client.startTestItem).toBeCalledWith(
+      {description: "new description", attributes: [], name: "foo", type: TYPE.SUITE, retry: false},
+      reporter.tempLaunchId,
+      null,
+    );
+  })
 
   test("should add sldc/slid to cucumber test", () => {
     const sauceLabOptions = {
@@ -121,7 +157,7 @@ describe("startSuite", () => {
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       1,
       {
-        description: undefined,
+        description: "",
         attributes: [{key: "SLID", value: "bar"}, {key: "SLDC", value: "foo"}],
         name: "foo",
         type: TYPE.TEST,
@@ -135,7 +171,7 @@ describe("startSuite", () => {
     expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
       2,
       {
-        description: undefined,
+        description: "",
         attributes: [],
         name: "foo",
         type: TYPE.STEP,
