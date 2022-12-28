@@ -53,6 +53,15 @@ class ReportPortalReporter extends Reporter {
     sendToReporter(EVENTS.RP_TEST_RETRY, {test});
   }
 
+  public static addDescriptionToCurrentSuite(description: string) {
+    sendToReporter(EVENTS.RP_SUITE_ADD_DESCRIPTION, description)
+  }
+
+  public static addDescriptionToAllSuites(description: string) {
+    sendToReporter(EVENTS.RP_ALL_SUITE_ADD_DESCRIPTION, description)
+  }
+
+
   private static getValidatedAttribute(attribute: Attribute): Attribute {
     if (!attribute) {
       throw new Error("Attribute should be an object")
@@ -99,6 +108,8 @@ class ReportPortalReporter extends Reporter {
   private featureName: string;
   private currentTestAttributes: Attribute[] = [];
   private currentSuiteAttributes: Attribute[] = []
+  private currentSuiteDescription: string[] = []
+  private suitesDescription: string[] = []
 
   constructor(options: any) {
     super(options);
@@ -150,7 +161,9 @@ class ReportPortalReporter extends Reporter {
     if (this.reporterOptions.parseTagsFromTestTitle) {
       suiteStartObj.addTags();
     }
-    suiteStartObj.description = this.sanitizedCapabilities;
+
+    log.debug(`ONSuiteStart - description: ${this.currentSuiteDescription}`)
+    suiteStartObj.description = [...this.suitesDescription, ...this.currentSuiteDescription].join('\n')
     const {tempId, promise} = this.client.startTestItem(
       suiteStartObj,
       this.tempLaunchId,
@@ -180,10 +193,11 @@ class ReportPortalReporter extends Reporter {
     }
 
     const suiteItem = this.storage.getCurrentSuite();
-    const finishSuiteObj = suiteStatus === STATUS.SKIPPED ? new EndTestItem(STATUS.SKIPPED, new Issue("NOT_ISSUE")) : {status: suiteStatus, attributes: this.currentSuiteAttributes};
+    const finishSuiteObj = suiteStatus === STATUS.SKIPPED ? new EndTestItem(STATUS.SKIPPED, new Issue("NOT_ISSUE")) : {status: suiteStatus, attributes: this.currentSuiteAttributes, description: [...this.suitesDescription, ...this.currentSuiteDescription].join('\n')};
 
     const {promise} = this.client.finishTestItem(suiteItem.id, finishSuiteObj);
     promiseErrorHandler(promise);
+    this.currentSuiteDescription = []
     this.storage.removeSuite();
   }
 
@@ -275,7 +289,7 @@ class ReportPortalReporter extends Reporter {
     log.debug(`Runner start`);
     this.rpPromisesCompleted = false;
     this.isMultiremote = runner.isMultiremote;
-    this.sanitizedCapabilities = runner.sanitizedCapabilities;
+    this.suitesDescription.push(runner.sanitizedCapabilities)
     this.sessionId = runner.sessionId;
     this.isCucumberFramework = runner.config.framework === 'cucumber'
     this.client = this.getReportPortalClient();
@@ -371,6 +385,14 @@ class ReportPortalReporter extends Reporter {
 
   private getReportPortalClient(): ReportPortalClient{
     return new ReportPortalClient(this.reporterOptions.reportPortalClientConfig);
+  }
+
+  private addDescriptionToCurrentSuite(description: string) {
+    this.currentSuiteDescription.push(description)
+  }
+
+  private addDescriptionToAllSuites(description: string) {
+    this.suitesDescription.push(description)
   }
 
   private addAttribute(attribute: Attribute) {
@@ -478,6 +500,8 @@ class ReportPortalReporter extends Reporter {
     process.on(EVENTS.RP_TEST_RETRY, this.finishTestManually.bind(this));
     process.on(EVENTS.RP_TEST_ATTRIBUTES, this.addAttribute.bind(this));
     process.on(EVENTS.RP_SUITE_ATTRIBUTES, this.addAttributeToSuite.bind(this));
+    process.on(EVENTS.RP_SUITE_ADD_DESCRIPTION, this.addDescriptionToCurrentSuite.bind(this))
+    process.on(EVENTS.RP_ALL_SUITE_ADD_DESCRIPTION, this.addDescriptionToAllSuites.bind(this))
   }
 
   private now() {
