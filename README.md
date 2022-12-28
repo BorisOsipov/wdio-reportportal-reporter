@@ -92,6 +92,10 @@ const reporter = require('wdio-reportportal-reporter')
 * `reporter.addAttributeToCurrentSuite({key, value})` - add an attribute to current suite.
   * `key` (*string*, optional) -  attribute key. It must be non-empty string.
   * `value` (*string*, required)–  attribute value. It must be non-empty string.
+* `reporter.addDescriptionToCurrentSuite(description)` - add some string to current suite.
+  * `description` (*string*) - description content
+* `reporter.addDescriptionToAllSuites(description)` - add some string to all upcoming suites. (Use it in before all hook, so every suite gets the same description)
+  * `description` (*string*) - description content
 * `reporter.sendLog(level, message)` – send log to current suite\test item.
   * `level` (*string*) - log level. Values ['trace', 'debug', 'info', 'warn', 'error'].
   * `message` (*string*)– log message content.
