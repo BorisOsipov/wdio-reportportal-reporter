@@ -162,7 +162,6 @@ class ReportPortalReporter extends Reporter {
       suiteStartObj.addTags();
     }
 
-    log.debug(`ONSuiteStart - description: ${this.currentSuiteDescription}`)
     suiteStartObj.description = [...this.suitesDescription, ...this.currentSuiteDescription].join('\n')
     const {tempId, promise} = this.client.startTestItem(
       suiteStartObj,
@@ -289,7 +288,7 @@ class ReportPortalReporter extends Reporter {
     log.debug(`Runner start`);
     this.rpPromisesCompleted = false;
     this.isMultiremote = runner.isMultiremote;
-    this.suitesDescription.push(runner.sanitizedCapabilities)
+    this.sanitizedCapabilities = runner.sanitizedCapabilities;
     this.sessionId = runner.sessionId;
     this.isCucumberFramework = runner.config.framework === 'cucumber'
     this.client = this.getReportPortalClient();
