@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/borisosipov/wdio-reportportal-reporter#readme",
   "dependencies": {
-    "@wdio/logger": "^7.26.0",
+    "@wdio/logger": "^8.1.0",
     "@wdio/reporter": "^7.28.0",
     "json-stringify-safe": "^5.0.1",
     "reportportal-js-client": "^2.2.1",
