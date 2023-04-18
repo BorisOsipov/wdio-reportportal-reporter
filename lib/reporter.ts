@@ -122,26 +122,27 @@ class ReportPortalReporter extends Reporter {
   }
 
   onSuiteStart(suite) {
-    log.debug(`Start suite ${suite.title} ${suite.uid}`);
-    this.specFilePath = suite.file;
-    const isCucumberFeature = suite.type === CUCUMBER_TYPE.FEATURE;
-    const isCucumberScenario = suite.type === CUCUMBER_TYPE.SCENARIO;
-    const suiteStartObj = this.reporterOptions.cucumberNestedSteps ?
-      new StartTestItem(suite.title, isCucumberFeature ? TYPE.TEST : TYPE.STEP) :
-      new StartTestItem(suite.title, TYPE.SUITE);
-    if (isCucumberFeature) {
-      addSauceLabAttributes(this.reporterOptions, suiteStartObj, this.sessionId);
-    }
-    if (isCucumberScenario) {
-      suiteStartObj.codeRef = getRelativePath(this.specFilePath) + ':' + suite.uid.replace(suite.title, '').trim();
-    }
-    if (this.reporterOptions.cucumberNestedSteps && this.reporterOptions.autoAttachCucumberFeatureToScenario) {
-      switch (suite.type) {
-        case CUCUMBER_TYPE.FEATURE:
-          this.featureName = suite.title;
+    try {
+      log.debug(`Start suite ${suite.title} ${suite.uid}`);
+      this.specFilePath = suite.file;
+      const isCucumberFeature = suite.type === CUCUMBER_TYPE.FEATURE;
+      const isCucumberScenario = suite.type === CUCUMBER_TYPE.SCENARIO;
+      const suiteStartObj = this.reporterOptions.cucumberNestedSteps ?
+        new StartTestItem(suite.title, isCucumberFeature ? TYPE.TEST : TYPE.STEP) :
+        new StartTestItem(suite.title, TYPE.SUITE);
+      if (isCucumberFeature) {
+        addSauceLabAttributes(this.reporterOptions, suiteStartObj, this.sessionId);
+      }
+      if (isCucumberScenario) {
+        suiteStartObj.codeRef = getRelativePath(this.specFilePath) + ':' + suite.uid.replace(suite.title, '').trim();
+      }
+      if (this.reporterOptions.cucumberNestedSteps && this.reporterOptions.autoAttachCucumberFeatureToScenario) {
+        switch (suite.type) {
+          case CUCUMBER_TYPE.FEATURE:
+            this.featureName = suite.title;
           break;
-        case CUCUMBER_TYPE.SCENARIO:
-          suiteStartObj.attributes = [
+          case CUCUMBER_TYPE.SCENARIO:
+            suiteStartObj.attributes = [
             {
               key: CUCUMBER_TYPE.FEATURE,
               value: this.featureName,
@@ -151,165 +152,228 @@ class ReportPortalReporter extends Reporter {
             suiteStartObj.retry = true;
           }
           break;
+        }
+      }
+      const suiteItem = this.storage.getCurrentSuite();
+      let parentId = null;
+      if (suiteItem !== null) {
+        parentId = suiteItem.id;
+      }
+      if (this.reporterOptions.parseTagsFromTestTitle) {
+        suiteStartObj.addTags();
+      }
+
+      suiteStartObj.description = [...this.suitesDescription, ...this.currentSuiteDescription].join('\n')
+      const {tempId, promise} = this.client.startTestItem(
+        suiteStartObj,
+        this.tempLaunchId,
+        parentId,
+      );
+      promiseErrorHandler(promise);
+      this.storage.addSuite(new StorageEntity(suiteStartObj.type, tempId, promise, suite));
+    } catch (e) {
+      log.error("An error occured on suite start");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
       }
     }
-    const suiteItem = this.storage.getCurrentSuite();
-    let parentId = null;
-    if (suiteItem !== null) {
-      parentId = suiteItem.id;
-    }
-    if (this.reporterOptions.parseTagsFromTestTitle) {
-      suiteStartObj.addTags();
-    }
-
-    suiteStartObj.description = [...this.suitesDescription, ...this.currentSuiteDescription].join('\n')
-    const {tempId, promise} = this.client.startTestItem(
-      suiteStartObj,
-      this.tempLaunchId,
-      parentId,
-    );
-    promiseErrorHandler(promise);
-    this.storage.addSuite(new StorageEntity(suiteStartObj.type, tempId, promise, suite));
   }
 
   onSuiteEnd(suite) {
-    log.debug(`End suite ${suite.title} ${suite.uid}`);
+    try {
+      log.debug(`End suite ${suite.title} ${suite.uid}`);
 
-    const isSomeTestFailed = suite.tests.some(({ state }) => state === WDIO_TEST_STATUS.FAILED);
-    let suiteStatus = isSomeTestFailed ? STATUS.FAILED : STATUS.PASSED;
-    if (this.reporterOptions.cucumberNestedSteps) {
-      switch (suite.type) {
-        case CUCUMBER_TYPE.SCENARIO:
-          const scenarioStepsAllPassed = suite.tests.every(({state}) => state === WDIO_TEST_STATUS.PASSED);
+      const isSomeTestFailed = suite.tests.some(({ state }) => state === WDIO_TEST_STATUS.FAILED);
+      let suiteStatus = isSomeTestFailed ? STATUS.FAILED : STATUS.PASSED;
+      if (this.reporterOptions.cucumberNestedSteps) {
+        switch (suite.type) {
+          case CUCUMBER_TYPE.SCENARIO:
+            const scenarioStepsAllPassed = suite.tests.every(({state}) => state === WDIO_TEST_STATUS.PASSED);
           const scenarioStepsSkipped = isSomeTestFailed ? false : suite.tests.some(({ state }) => state === WDIO_TEST_STATUS.SKIPPED);
           suiteStatus = scenarioStepsAllPassed ? STATUS.PASSED : scenarioStepsSkipped ? STATUS.SKIPPED : STATUS.FAILED;
           this.featureStatus = this.featureStatus === STATUS.PASSED && suiteStatus === STATUS.PASSED ? STATUS.PASSED : STATUS.FAILED;
           break;
-        case CUCUMBER_TYPE.FEATURE:
-          suiteStatus = this.featureStatus;
+          case CUCUMBER_TYPE.FEATURE:
+            suiteStatus = this.featureStatus;
           break;
+        }
+      }
+
+      const suiteItem = this.storage.getCurrentSuite();
+      const finishSuiteObj = suiteStatus === STATUS.SKIPPED ? new EndTestItem(STATUS.SKIPPED, new Issue("NOT_ISSUE")) : {status: suiteStatus, attributes: this.currentSuiteAttributes, description: [...this.suitesDescription, ...this.currentSuiteDescription].join('\n')};
+
+      const {promise} = this.client.finishTestItem(suiteItem.id, finishSuiteObj);
+      promiseErrorHandler(promise);
+      this.currentSuiteDescription = []
+      this.storage.removeSuite();
+    } catch (e) {
+      log.error("An error occed on suite end");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
       }
     }
-
-    const suiteItem = this.storage.getCurrentSuite();
-    const finishSuiteObj = suiteStatus === STATUS.SKIPPED ? new EndTestItem(STATUS.SKIPPED, new Issue("NOT_ISSUE")) : {status: suiteStatus, attributes: this.currentSuiteAttributes, description: [...this.suitesDescription, ...this.currentSuiteDescription].join('\n')};
-
-    const {promise} = this.client.finishTestItem(suiteItem.id, finishSuiteObj);
-    promiseErrorHandler(promise);
-    this.currentSuiteDescription = []
-    this.storage.removeSuite();
   }
 
   onTestStart(test, type = TYPE.STEP) {
-    log.debug(`Start test ${test.title} ${test.uid}`);
-    if (this.storage.getCurrentTest()) {
-      return;
-    }
-    const suite = this.storage.getCurrentSuite();
-    const testStartObj = new StartTestItem(test.title, type);
-    if(this.isCucumberFramework) {
-      addCodeRefCucumber(this.specFilePath, test, testStartObj)
-    } else {
-      addCodeRef(this.specFilePath, test.fullTitle, testStartObj)
-    }
-    if (this.reporterOptions.cucumberNestedSteps) {
-      testStartObj.hasStats = false;
-    } else {
-      addSauceLabAttributes(this.reporterOptions, testStartObj, this.sessionId);
-    }
-    if (this.reporterOptions.parseTagsFromTestTitle) {
-      testStartObj.addTags();
-    }
-    if (this.reporterOptions.setRetryTrue) {
-      testStartObj.retry = true;
-    }
-    addBrowserParam(this.sanitizedCapabilities, testStartObj);
+    try {
+      log.debug(`Start test ${test.title} ${test.uid}`);
+      if (this.storage.getCurrentTest()) {
+        return;
+      }
+      const suite = this.storage.getCurrentSuite();
+      const testStartObj = new StartTestItem(test.title, type);
+      if(this.isCucumberFramework) {
+        addCodeRefCucumber(this.specFilePath, test, testStartObj)
+      } else {
+        addCodeRef(this.specFilePath, test.fullTitle, testStartObj)
+      }
+      if (this.reporterOptions.cucumberNestedSteps) {
+        testStartObj.hasStats = false;
+      } else {
+        addSauceLabAttributes(this.reporterOptions, testStartObj, this.sessionId);
+      }
+      if (this.reporterOptions.parseTagsFromTestTitle) {
+        testStartObj.addTags();
+      }
+      if (this.reporterOptions.setRetryTrue) {
+        testStartObj.retry = true;
+      }
+      addBrowserParam(this.sanitizedCapabilities, testStartObj);
 
-    const {tempId, promise} = this.client.startTestItem(
-      testStartObj,
-      this.tempLaunchId,
-      suite.id,
-    );
-    promiseErrorHandler(promise);
+      const {tempId, promise} = this.client.startTestItem(
+        testStartObj,
+        this.tempLaunchId,
+        suite.id,
+      );
+      promiseErrorHandler(promise);
 
-    this.storage.addTest(test.uid, new StorageEntity(testStartObj.type, tempId, promise, test));
-    return promise;
+      this.storage.addTest(test.uid, new StorageEntity(testStartObj.type, tempId, promise, test));
+      return promise;
+    } catch (e) {
+      log.error("An error occed on test start");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
+      }
+    }
   }
 
   onTestPass(test) {
-    log.debug(`Pass test ${test.title} ${test.uid}`);
-    this.testFinished(test, STATUS.PASSED);
+    try {
+      log.debug(`Pass test ${test.title} ${test.uid}`);
+      this.testFinished(test, STATUS.PASSED);
+    } catch (e) {
+      log.error("An error occed on test pass");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
+      }
+    }
   }
 
   onTestFail(test) {
-    log.debug(`Fail test ${test.title} ${test.uid} ${test.error.stack}`);
-    const testItem = this.storage.getCurrentTest();
-    if (testItem === null) {
-      this.onTestStart(test, TYPE.BEFORE_METHOD);
+    try {
+      log.debug(`Fail test ${test.title} ${test.uid} ${test.error.stack}`);
+      const testItem = this.storage.getCurrentTest();
+      if (testItem === null) {
+        this.onTestStart(test, TYPE.BEFORE_METHOD);
+      }
+      this.testFinished(test, STATUS.FAILED);
+    } catch (e) {
+      log.error("An error occed on test fail");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
+      }
     }
-    this.testFinished(test, STATUS.FAILED);
   }
 
   onTestSkip(test) {
-    log.debug(`Skip test ${test.title} ${test.uid}`);
-    const testItem = this.storage.getCurrentTest();
-    if (testItem === null) {
-      this.onTestStart(test);
+    try {
+      log.debug(`Skip test ${test.title} ${test.uid}`);
+      const testItem = this.storage.getCurrentTest();
+      if (testItem === null) {
+        this.onTestStart(test);
+      }
+      this.testFinished(test, STATUS.SKIPPED, new Issue("NOT_ISSUE"));
+    } catch (e) {
+      log.error("An error occed on test skip");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
+      }
     }
-    this.testFinished(test, STATUS.SKIPPED, new Issue("NOT_ISSUE"));
   }
 
   testFinished(test: any, status: STATUS, issue ?: Issue) {
-    log.debug(`Finish test ${test.title} ${test.uid}`);
-    const testItem = this.storage.getCurrentTest();
-    if (testItem === null) {
-      return;
-    }
-    const finishTestObj = new EndTestItem(status, issue);
-    if (status === STATUS.FAILED) {
-      const stacktrace = test.error.stack;
-      const message = this.reporterOptions.sanitizeErrorMessages ?
-        stacktrace.replace(ansiRegex(), '') : `${stacktrace}`;
-      finishTestObj.description = `❌ ${message}`;
-      this.client.sendLog(testItem.id, {
-        level: LEVEL.ERROR,
-        message,
-      });
-    }
-    finishTestObj.attributes = [...this.currentTestAttributes];
-    const {promise} = this.client.finishTestItem(testItem.id, finishTestObj);
-    promiseErrorHandler(promise);
+    try {
+      log.debug(`Finish test ${test.title} ${test.uid}`);
+      const testItem = this.storage.getCurrentTest();
+      if (testItem === null) {
+        return;
+      }
+      const finishTestObj = new EndTestItem(status, issue);
+      if (status === STATUS.FAILED) {
+        const stacktrace = test.error.stack;
+        const message = this.reporterOptions.sanitizeErrorMessages ?
+          stacktrace.replace(ansiRegex(), '') : `${stacktrace}`;
+        finishTestObj.description = `❌ ${message}`;
+        this.client.sendLog(testItem.id, {
+          level: LEVEL.ERROR,
+          message,
+        });
+      }
+      finishTestObj.attributes = [...this.currentTestAttributes];
+      const {promise} = this.client.finishTestItem(testItem.id, finishTestObj);
+      promiseErrorHandler(promise);
 
-    this.storage.removeTest(testItem);
-    this.currentTestAttributes = [];
+      this.storage.removeTest(testItem);
+      this.currentTestAttributes = [];
+    } catch (e) {
+      log.error("An error occed on test finished");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
+      }
+    }
   }
 
   onRunnerStart(runner) {
-    log.debug(`Runner start`);
-    this.rpPromisesCompleted = false;
-    this.isMultiremote = runner.isMultiremote;
-    this.sanitizedCapabilities = runner.sanitizedCapabilities;
-    this.sessionId = runner.sessionId;
-    this.isCucumberFramework = runner.config.framework === 'cucumber'
-    this.client = this.getReportPortalClient();
-    this.launchId = process.env.RP_LAUNCH_ID;
-    const startLaunchObj = {
-      attributes: this.reporterOptions.reportPortalClientConfig.attributes,
-      description: this.reporterOptions.reportPortalClientConfig.description,
-      id: this.launchId,
-      mode: this.reporterOptions.reportPortalClientConfig.mode,
-      rerun: false,
-      rerunOf: null,
-    };
-    if (runner.retry > 0) {
-      delete startLaunchObj.id;
-      startLaunchObj.rerun = true;
-      startLaunchObj.rerunOf = this.launchId;
-      const result = this.client.startLaunch(startLaunchObj);
-      this.tempLaunchId = result.tempId;
-    } else {
-      const {tempId} = this.client.startLaunch(startLaunchObj);
-      this.tempLaunchId = tempId;
+    try {
+      log.debug(`Runner start`);
+      this.rpPromisesCompleted = false;
+      this.isMultiremote = runner.isMultiremote;
+      this.sanitizedCapabilities = runner.sanitizedCapabilities;
+      this.sessionId = runner.sessionId;
+      this.isCucumberFramework = runner.config.framework === 'cucumber'
+      this.client = this.getReportPortalClient();
+      this.launchId = process.env.RP_LAUNCH_ID;
+      const startLaunchObj = {
+        attributes: this.reporterOptions.reportPortalClientConfig.attributes,
+        description: this.reporterOptions.reportPortalClientConfig.description,
+        id: this.launchId,
+        mode: this.reporterOptions.reportPortalClientConfig.mode,
+        rerun: false,
+        rerunOf: null,
+      };
+      if (runner.retry > 0) {
+        delete startLaunchObj.id;
+        startLaunchObj.rerun = true;
+        startLaunchObj.rerunOf = this.launchId;
+        const result = this.client.startLaunch(startLaunchObj);
+        this.tempLaunchId = result.tempId;
+      } else {
+        const {tempId} = this.client.startLaunch(startLaunchObj);
+        this.tempLaunchId = tempId;
+      }
+    } catch (e) {
+      log.error("An error occed on runner start");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
+      }
     }
   }
 
@@ -327,58 +391,90 @@ class ReportPortalReporter extends Reporter {
   }
 
   onBeforeCommand(command) {
-    if (!this.reporterOptions.reportSeleniumCommands || this.isMultiremote) {
-      return;
-    }
+    try {
+      if (!this.reporterOptions.reportSeleniumCommands || this.isMultiremote) {
+        return;
+      }
 
-    const method = `${command.method} ${command.endpoint}`;
-    if (!isEmpty(command.body)) {
-      const data = JSON.stringify(limit(command.body));
-      this.sendLog({message: `${method} ${data}`, level: this.reporterOptions.seleniumCommandsLogLevel});
-    } else {
-      this.sendLog({message: `${method}`, level: this.reporterOptions.seleniumCommandsLogLevel});
+      const method = `${command.method} ${command.endpoint}`;
+      if (!isEmpty(command.body)) {
+        const data = JSON.stringify(limit(command.body));
+        this.sendLog({message: `${method} ${data}`, level: this.reporterOptions.seleniumCommandsLogLevel});
+      } else {
+        this.sendLog({message: `${method}`, level: this.reporterOptions.seleniumCommandsLogLevel});
+      }
+    } catch (e) {
+      log.error("An error occed on before command");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
+      }
     }
   }
 
   onAfterCommand(command) {
-    if (this.isMultiremote) {
-      return;
-    }
-    const isScreenshot = isScreenshotCommand(command) && command.result.value;
-    const {autoAttachScreenshots, screenshotsLogLevel, seleniumCommandsLogLevel, reportSeleniumCommands} = this.reporterOptions;
-    if (isScreenshot) {
-      if (autoAttachScreenshots) {
-        const obj = {
-          content: command.result.value,
-          level: screenshotsLogLevel,
-          name: "screenshot.png",
-          message: "screenshot"
-        };
-        this.sendFile(obj);
+    try {
+      if (this.isMultiremote) {
+        return;
       }
-    }
+      const isScreenshot = isScreenshotCommand(command) && command.result.value;
+      const {autoAttachScreenshots, screenshotsLogLevel, seleniumCommandsLogLevel, reportSeleniumCommands} = this.reporterOptions;
+      if (isScreenshot) {
+        if (autoAttachScreenshots) {
+          const obj = {
+            content: command.result.value,
+            level: screenshotsLogLevel,
+            name: "screenshot.png",
+            message: "screenshot"
+          };
+          this.sendFile(obj);
+        }
+      }
 
-    if (reportSeleniumCommands) {
-      if (command.body && !isEmpty(command.result.value)) {
-        delete command.result.sessionId;
-        const data = JSON.stringify(limit(command.result));
-        this.sendLog({message: `${data}`, level: seleniumCommandsLogLevel});
+      if (reportSeleniumCommands) {
+        if (command.body && !isEmpty(command.result.value)) {
+          delete command.result.sessionId;
+          const data = JSON.stringify(limit(command.result));
+          this.sendLog({message: `${data}`, level: seleniumCommandsLogLevel});
+        }
+      }
+    } catch (e) {
+      log.error("An error occed on after command");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
       }
     }
   }
 
   onHookStart(hook) {
-    log.debug(`Start hook ${hook.title} ${hook.uid}`);
+    try {
+      log.debug(`Start hook ${hook.title} ${hook.uid}`);
+    } catch (e) {
+      log.error("An error occed on hook start");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
+      }
+    }
   }
 
   onHookEnd(hook) {
-    log.debug(`End hook ${hook.title} ${hook.uid} ${JSON.stringify(hook)}`);
-    if (hook.error) {
-      const testItem = this.storage.getCurrentTest();
-      if (testItem === null) {
-        this.onTestStart(hook, TYPE.BEFORE_METHOD);
+    try {
+      log.debug(`End hook ${hook.title} ${hook.uid} ${JSON.stringify(hook)}`);
+      if (hook.error) {
+        const testItem = this.storage.getCurrentTest();
+        if (testItem === null) {
+          this.onTestStart(hook, TYPE.BEFORE_METHOD);
+        }
+        this.testFinished(hook, STATUS.FAILED);
       }
-      this.testFinished(hook, STATUS.FAILED);
+    } catch (e) {
+      log.error("An error occed on hook end");
+      log.error(e);
+      if (this.reporterOptions.throwOnReportingFailure) {
+        throw e;
+      }
     }
   }
 
