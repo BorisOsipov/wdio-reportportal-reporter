@@ -34,33 +34,67 @@ class ReportPortalReporter extends Reporter {
   }
 
   public static sendLog(level: LEVEL | keyof typeof LEVEL, message: any) {
-    sendToReporter(EVENTS.RP_LOG, {level, message});
+    try {
+      sendToReporter(EVENTS.RP_LOG, {level, message});
+    } catch (e) {
+      log.error("An error occured when sending log");
+      log.error(e);
+    }
   }
 
   public static sendFile(level: LEVEL | keyof typeof LEVEL, name: string, content: any, type = "image/png", message = "") {
-    sendToReporter(EVENTS.RP_FILE, {level, name, content, type, message});
+    try {
+      sendToReporter(EVENTS.RP_FILE, {level, name, content, type, message});
+    } catch (e) {
+      log.error("An error occured when sending file");
+      log.error(e);
+    }
   }
 
   public static sendLogToTest(test: any, level: LEVEL | keyof typeof LEVEL, message: any) {
-    sendToReporter(EVENTS.RP_TEST_LOG, {test, level, message});
+    try {
+      sendToReporter(EVENTS.RP_TEST_LOG, {test, level, message});
+    } catch (e) {
+      log.error("An error occured when sending log to test");
+      log.error(e);
+    }
   }
 
   public static sendFileToTest(test: any, level: LEVEL | keyof typeof LEVEL, name: string, content: any, type = "image/png", message = "") {
-    sendToReporter(EVENTS.RP_TEST_FILE, {test, level, name, content, type, message});
+    try {
+      sendToReporter(EVENTS.RP_TEST_FILE, {test, level, name, content, type, message});
+    } catch (e) {
+      log.error("An error occured when sending file to test");
+      log.error(e);
+    }
   }
 
   public static finishTestManually(test: any) {
-    sendToReporter(EVENTS.RP_TEST_RETRY, {test});
+    try {
+      sendToReporter(EVENTS.RP_TEST_RETRY, {test});
+    } catch (e) {
+      log.error("An error occured when finishing test manually");
+      log.error(e);
+    }
   }
 
   public static addDescriptionToCurrentSuite(description: string) {
-    sendToReporter(EVENTS.RP_SUITE_ADD_DESCRIPTION, description)
+    try {
+      sendToReporter(EVENTS.RP_SUITE_ADD_DESCRIPTION, description)
+    } catch (e) {
+      log.error("An error occured when adding description to current suite");
+      log.error(e);
+    }
   }
 
   public static addDescriptionToAllSuites(description: string) {
-    sendToReporter(EVENTS.RP_ALL_SUITE_ADD_DESCRIPTION, description)
+    try {
+      sendToReporter(EVENTS.RP_ALL_SUITE_ADD_DESCRIPTION, description)
+    } catch (e) {
+      log.error("An error occured when adding description to all suites")
+      log.error(e)
+    }
   }
-
 
   private static getValidatedAttribute(attribute: Attribute): Attribute {
     if (!attribute) {
@@ -85,11 +119,21 @@ class ReportPortalReporter extends Reporter {
   }
 
   public static addAttribute(attribute: Attribute) {
-    sendToReporter(EVENTS.RP_TEST_ATTRIBUTES, {...this.getValidatedAttribute(attribute)});
+    try {
+      sendToReporter(EVENTS.RP_TEST_ATTRIBUTES, {...this.getValidatedAttribute(attribute)});
+    } catch (e) {
+      log.error("An error occured when adding attribute")
+      log.error(e)
+    }
   }
 
   public static addAttributeToSuite(attribute: Attribute) {
-    sendToReporter(EVENTS.RP_SUITE_ATTRIBUTES, {...this.getValidatedAttribute(attribute)});
+    try {
+      sendToReporter(EVENTS.RP_SUITE_ATTRIBUTES, {...this.getValidatedAttribute(attribute)});
+    } catch (e) {
+      log.error("An error occured when adding attribute to suite")
+      log.error(e)
+    }
   }
 
   private static reporterName = "reportportal";
