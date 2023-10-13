@@ -12,7 +12,7 @@ const OBJLENGTH = 10;
 const ARRLENGTH = 10;
 const STRINGLIMIT = 1000;
 const STRINGTRUNCATE = 200;
-const TAGS_PATTERN = /\B@[a-z0-9_-]+/gi;
+const TAGS_PATTERN = /\B@[a-z0-9_:-]+/gi;
 const log = logger("wdio-reportportal-reporter");
 
 export const promiseErrorHandler = (promise: Promise<any>) => {

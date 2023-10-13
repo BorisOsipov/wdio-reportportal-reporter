@@ -23,7 +23,11 @@ export class StartTestItem {
   public addTags() {
     const tags = parseTags(this.name);
     if (tags.length > 0) {
-      const attrs = tags.map((value) => (new Attribute(undefined, value)));
+      const attrs = tags.map((value) =>
+        value.includes(':')
+          ? (new Attribute(value.split(':')[0], value.split(':')[1]))
+          : (new Attribute(undefined, value))
+      );
       this.attributes.push(...attrs);
     }
   }
