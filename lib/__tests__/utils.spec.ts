@@ -148,7 +148,13 @@ describe("#addSauceLabAttributes", () => {
 });
 
 describe("#addCodeRef", () => {
-  test("should add code reference to the test item", () => {
+  test("should add code reference with full process path to the test item", () => {
+    const testStartObj = new StartTestItem("foo", TYPE.TEST);
+    addCodeRef("example.spec.js", "foobar", testStartObj, true);
+    expect(testStartObj.codeRef).toEqual(`example.spec.js:foobar`);
+  });
+
+  test("should add code reference without full process path to the test item", () => {
     const testStartObj = new StartTestItem("foo", TYPE.TEST);
     addCodeRef("example.spec.js", "foobar", testStartObj);
     expect(testStartObj.codeRef).toEqual(`example.spec.js:foobar`);
@@ -156,11 +162,19 @@ describe("#addCodeRef", () => {
 });
 
 describe("#addCodeRefCucumber", () => {
-  test("should add code reference to the test item", () => {
+  test("should add code reference with full process path to the test item", () => {
     const testStartObj = new StartTestItem("foo", TYPE.TEST);
     const test = {title: "foobar", uid: "baz"}
     // @ts-ignore
-    addCodeRefCucumber("example.spec.js", test, testStartObj);
+    addCodeRefCucumber("example.spec.js", test, testStartObj, true);
+    expect(testStartObj.codeRef).toEqual(`example.spec.js:baz`);
+  });
+
+  test("should add code reference without full process path to the test item", () => {
+    const testStartObj = new StartTestItem("foo", TYPE.TEST);
+    const test = {title: "foobar", uid: "baz"}
+    // @ts-ignore
+    addCodeRefCucumber("example.spec.js", test, testStartObj, false);
     expect(testStartObj.codeRef).toEqual(`example.spec.js:baz`);
   });
 });
