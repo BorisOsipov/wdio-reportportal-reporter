@@ -62,6 +62,7 @@ const conf = {
   cucumberNestedSteps: false, // report cucumber steps as Report Portal steps
   autoAttachCucumberFeatureToScenario: false, // requires cucumberNestedSteps to be true for use
   sanitizeErrorMessages: true, // strip color ascii characters from error stacktrace
+  useFullPathCodeRef: true, // prefix file path with process file path, may need to disable for ci
   sauceLabOptions : {
     enabled: true, // automatically add SauseLab ID to rp tags.
     sldc: "US" // automatically add SauseLab region to rp tags.
