@@ -208,9 +208,9 @@ class ReportPortalReporter extends Reporter {
     const suite = this.storage.getCurrentSuite();
     const testStartObj = new StartTestItem(test.title, type);
     if(this.isCucumberFramework) {
-      addCodeRefCucumber(this.specFilePath, test, testStartObj)
+      addCodeRefCucumber(this.specFilePath, test, testStartObj, this.reporterOptions.useuseFullPathCodeRef);
     } else {
-      addCodeRef(this.specFilePath, test.fullTitle, testStartObj)
+      addCodeRef(this.specFilePath, test.fullTitle, testStartObj, this.reporterOptions.useFullPathCodeRef);
     }
     if (this.reporterOptions.cucumberNestedSteps) {
       testStartObj.hasStats = false;
