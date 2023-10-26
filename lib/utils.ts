@@ -117,12 +117,12 @@ export const sendToReporter = (event: any, msg = {}) => {
 export const getRelativePath = (val: string) => val.replace(`${process.cwd()}${path.sep}`, '').trim()
 
 export const addCodeRef = (specFilePath: string, testname: string, testItem: StartTestItem) => {
-  testItem.codeRef = `${getRelativePath(specFilePath)}:${testname}`;
+  testItem.codeRef = `${ReporterOptions.useFullPathCodeRef ? getRelativePath(specFilePath) : specFilePath}:${testname}`;
 };
 
 export const addCodeRefCucumber = (specFilePath: string, test: TestStats, testItem: StartTestItem) => {
   const testTitleNoKeyword = test.title.replace(/^(Given|When|Then|And) /g, '').trim();
-  testItem.codeRef = `${getRelativePath(specFilePath)}:${test.uid.replace(testTitleNoKeyword, '').trim()}`;
+  testItem.codeRef = `${ReporterOptions.useFullPathCodeRef ? getRelativePath(specFilePath) : specFilePath}:${test.uid.replace(testTitleNoKeyword, '').trim()}`;
 }
 
 export function ansiRegex () {
