@@ -156,7 +156,7 @@ describe("#addCodeRef", () => {
 
   test("should add code reference without full process path to the test item", () => {
     const testStartObj = new StartTestItem("foo", TYPE.TEST);
-    addCodeRef("example.spec.js", "foobar", testStartObj);
+    addCodeRef("example.spec.js", "foobar", testStartObj, false);
     expect(testStartObj.codeRef).toEqual(`example.spec.js:foobar`);
   });
 });
