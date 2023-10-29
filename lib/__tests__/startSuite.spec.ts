@@ -213,7 +213,7 @@ describe("startSuite", () => {
         name: "foo",
         type: TYPE.STEP,
         retry: false,
-        codeRef: "FooBarSuite scenario"
+        codeRef: ""
       },
       reporter.tempLaunchId,
       id,
