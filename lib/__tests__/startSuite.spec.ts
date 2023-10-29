@@ -182,4 +182,41 @@ describe("startSuite", () => {
       id,
     );
   });
+
+  
+  test("should set codeRef to scenario name when useScenarioNameAsCodeRef option set to true", () => {
+    Object.assign(reporter.reporterOptions, {useScenarioNameAsCodeRef: true});
+    reporter.sessionId = "bar";
+    reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.FEATURE}));
+    reporter.onSuiteStart(Object.assign(suiteStartEvent(), {type: CUCUMBER_TYPE.SCENARIO}));
+
+    expect(reporter.client.startTestItem).toBeCalledTimes(2);
+    expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
+      1,
+      {
+        description: "",
+        attributes: [],
+        name: "foo",
+        type: TYPE.TEST,
+        retry: false
+      },
+      reporter.tempLaunchId,
+      null,
+    );
+
+    const {id} = reporter.storage.getCurrentSuite();
+    expect(reporter.client.startTestItem).toHaveBeenNthCalledWith(
+      2,
+      {
+        description: "",
+        attributes: [],
+        name: "foo",
+        type: TYPE.STEP,
+        retry: false,
+        codeRef: "FooBarSuite scenario"
+      },
+      reporter.tempLaunchId,
+      id,
+    );
+  });
 });
