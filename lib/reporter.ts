@@ -133,7 +133,7 @@ class ReportPortalReporter extends Reporter {
       addSauceLabAttributes(this.reporterOptions, suiteStartObj, this.sessionId);
     }
     if (isCucumberScenario) {
-      suiteStartObj.codeRef = getRelativePath(this.specFilePath) + ':' + suite.uid.replace(suite.title, '').trim();
+      suiteStartObj.codeRef = this.reporterOptions.useScenarioNameAsCodeRef ? suite.title :  getRelativePath(this.specFilePath) + ':' + suite.uid.replace(suite.title, '').trim();
     }
     if (this.reporterOptions.cucumberNestedSteps && this.reporterOptions.autoAttachCucumberFeatureToScenario) {
       switch (suite.type) {
