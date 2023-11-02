@@ -31,5 +31,6 @@ export default class ReporterOptions {
   public cucumberNestedSteps = false;
   public autoAttachCucumberFeatureToScenario = false;
   public sanitizeErrorMessages = true;
+  public useScenarioNameAsCodeRef = false;
   public reportPortalClientConfig = {mode: MODE.DEFAULT, attributes: [Attribute], description: ""};
 }
