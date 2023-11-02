@@ -178,7 +178,7 @@ exports.config = {
         failureObject.title = `${stepData.step.keyword}${stepData.step.text}`;
         const screenShot = await global.browser.takeScreenshot();
         let attachment = Buffer.from(screenShot, 'base64');
-        await reportportal.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
+        reportportal.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
     }
   }
 ...
