@@ -183,7 +183,6 @@ describe("startSuite", () => {
     );
   });
 
-  
   test("should set codeRef to scenario name when useScenarioNameAsCodeRef option set to true", () => {
     Object.assign(reporter.reporterOptions, {useScenarioNameAsCodeRef: true});
     reporter.sessionId = "bar";
