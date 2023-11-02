@@ -157,7 +157,7 @@ exports.config = {
       await browser.saveScreenshot(outputFile);
       //!!
       Object.assign(test, {title: test.description}}
-      await reportportal.sendFileToTest(test, 'info', filename, fs.readFileSync(outputFile));
+      reportportal.sendFileToTest(test, 'info', filename, fs.readFileSync(outputFile));
     }
   }
 ...
