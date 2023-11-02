@@ -1,4 +1,4 @@
-useScenarioNameAsCodeRefimport {LEVEL, MODE} from "./constants";
+import {LEVEL, MODE} from "./constants";
 
 export class Attribute {
   public key?: string;
