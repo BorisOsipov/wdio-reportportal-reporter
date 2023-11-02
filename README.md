@@ -130,12 +130,12 @@ const fs = require('fs');
 
 exports.config = {
 ...
-  afterTest(test) {
+  async afterTest(test) {
     if (test.passed === false) {
       const filename = "screnshot.png";
       const outputFile = path.join(__dirname, filename);
-      browser.saveScreenshot(outputFile);
-      reportportal.sendFileToTest(test, 'info', filename, fs.readFileSync(outputFile));
+      await browser.saveScreenshot(outputFile);
+      await reportportal.sendFileToTest(test, 'info', filename, fs.readFileSync(outputFile));
     }
   }
 ...
@@ -150,14 +150,14 @@ const fs = require('fs');
 
 exports.config = {
 ...
-  afterTest(test) {
+  async afterTest(test) {
     if (test.passed === false) {
       const filename = "screnshot.png";
       const outputFile = path.join(__dirname, filename);
-      browser.saveScreenshot(outputFile);
+      await browser.saveScreenshot(outputFile);
       //!!
       Object.assign(test, {title: test.description}}
-      reportportal.sendFileToTest(test, 'info', filename, fs.readFileSync(outputFile));
+      await reportportal.sendFileToTest(test, 'info', filename, fs.readFileSync(outputFile));
     }
   }
 ...
@@ -170,15 +170,15 @@ const reportportal = require('wdio-reportportal-reporter');
 
 exports.config = {
 ...
-   afterStep: function (uri, feature, { error, result, duration, passed }, stepData, context) {
+   afterStep: async function (uri, feature, { error, result, duration, passed }, stepData, context) {
      if (!passed) {
         let failureObject = {};
         failureObject.type = 'afterStep';
         failureObject.error = error;
         failureObject.title = `${stepData.step.keyword}${stepData.step.text}`;
-        const screenShot = global.browser.takeScreenshot();
+        const screenShot = await global.browser.takeScreenshot();
         let attachment = Buffer.from(screenShot, 'base64');
-        reportportal.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
+        await reportportal.sendFileToTest(failureObject, 'error', "screnshot.png", attachment);
     }
   }
 ...
