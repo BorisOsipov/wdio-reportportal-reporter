@@ -135,7 +135,7 @@ exports.config = {
       const filename = "screnshot.png";
       const outputFile = path.join(__dirname, filename);
       await browser.saveScreenshot(outputFile);
-      await reportportal.sendFileToTest(test, 'info', filename, fs.readFileSync(outputFile));
+      reportportal.sendFileToTest(test, 'info', filename, fs.readFileSync(outputFile));
     }
   }
 ...
